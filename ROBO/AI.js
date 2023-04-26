@@ -39,18 +39,13 @@ export default function AI() {
   const [IsRecording, setIsRecording] = useState('')
   const [IsSpeak, setIsSpeak] = useState('')
   const [IsTriger, setIsTriger] = useState(false)
+  const [assestant, setAssistanc] = useState(false)
   const [subTrigger, setSubtrigger] = useState(false)
   const [inputMessage, setInputMessage] = useState("");
   const [outputMessage, setOutputMessage] = useState("The output message");
   const [IsOrNot , setIsOrNot] = useState(false)
   const [StartT , setStartT] = useState(false)
   const [WelcomSp , setWelcomSp] = useState('')
-  useEffect(() => {
-
-// Voice.onSpeechEnd()
-console.log(Voice);
-
-  },[])
 
   const setRecodingResult = (data)=>{
     
@@ -63,18 +58,18 @@ console.log(Voice);
   Voice.onSpeechResults = (result) => setRecodingResult(result.value[0])
   
 
-  const handleTextInputMessage = (text) => {
-    console.log(text);
-    setInputMessage(text);
-  };
+  // const handleTextInputMessage = (text) => {
+  //   console.log(text);
+  //   setInputMessage(text);
+  // };
 
 
-useEffect(()=>{
-  setInterval(() => {
-    setStartT(true)
+// useEffect(()=>{
+//   setInterval(() => {
+//     setStartT(true)
     
-  }, 2500);
-})
+//   }, 2500);
+// })
 
 
 
@@ -88,7 +83,7 @@ useEffect(()=>{
 
 
   const stopRecording = async () => {
-console.log("stpo recoding*****");
+// console.log("stpo recoding*****");
     setStarted(false)
     setLoading(false) 
     setIsOrNot(true)
@@ -102,18 +97,14 @@ console.log("stpo recoding*****");
   
 
   // jestin xavier
-
   useEffect(() => {
  if(!IsTriger){
-  console.log("trigger startted******");
    startRecording()
  }
  else{
   stopRecording()
  }
-
- 
-  }, [IsTriger,startRecording])
+  }, [startRecording,IsTriger])
 
 
 
@@ -121,13 +112,21 @@ console.log("stpo recoding*****");
   const TextToSpeech = (data)=>{
     // console.log(IsTriger,'text to speech');
 // if(IsTriger){
-  return(  Tts.speak(data, {
-      androidParams: {
-        KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.3,
-        KEY_PARAM_STREAM: 'STREAM_MUSIC',
-      },
-    })
+
+Tts.addEventListener('tts-finish', () => {
+  triggerGenerate(false)
+  console.log('Speech finished')
+} );
+ Tts.speak(data, {
+    androidParams: {
+      KEY_PARAM_PAN: -1,
+      KEY_PARAM_VOLUME: 0.3,
+      KEY_PARAM_STREAM: 'STREAM_MUSIC',
+    },
+   
+  }
+  
+
  )
 //  }
   }
@@ -135,43 +134,32 @@ console.log("stpo recoding*****");
 
 
 const triggerGenerate =(data)=>{
-  console.log("****trigger");
   setIsTriger(data)
 }
 const initialSetResult = ()=>{
   setResult("")
+}
+const assistanceTrigger = (data) =>{
+  setAssistanc(data)
 }
 
 
   useEffect(() => {
 
     console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
-
-
- 
-
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
-    if (result === "Alexa" || result === "hi Alexa" || result === "hey Alexa") {
-
-
-      // setInterval(()=>{
-      //   console.log("Triggger after 7000");
-      //   return triggerGenerate(false)
-      // },7000)
+   
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa") && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      stopRecording().then(()=>{
-        TextToSpeech("HI i am Alexa ")
-       
-        .then(async()=>{
-          Voice.cancel((res)=>console.log('voice cancel',res))              
-        })
- 
-      }).then(()=>startRecording())
-      console.log(result.length > 0 && IsTriger);
-
+      TextToSpeech("HI i am Alexa ")
+      assistanceTrigger(true)
     } 
+    
+
   }, [result])
+
+
 
 const VoiceController =  (data)=>{
   setIsTriger(data)
@@ -179,92 +167,96 @@ const VoiceController =  (data)=>{
 }
 
   useEffect(() => {
-    console.log(result.length > 0, IsTriger,"********IsTriger",result);
-    
+    console.log('====================================');
+    console.log(result );
+    console.log('====================================');
     if (result.length > 0 ) {
-      VoiceController(true)
-      // if(IsTriger){
-      //   console.log(IsTriger,+"+++++++++++++++++++++++++++++++++++++++++++++++");
-
-      // fetch("https://api.openai.com/v1/chat/completions", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization:
-      //       "Bearer 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",
-      //   },
-      //   body: JSON.stringify({
-      //     // "prompt": inputMessage,
-      //     messages: [{ role: "user", content: result }],
-      //     // "model": "text-davinci-003",
-      //     model: "gpt-3.5-turbo",
-      //   }),
-      // })
-      //   .then((res) => res.json())
-      //   .then((data) => {
-      //     console.log(data);
-      //     console.log(data?.choices[0].message?.content);
-      //     setIsSpeak(data?.choices[0].message?.content)
-      //     TextToSpeech(data?.choices[0].message?.content)
-
-      //     // Tts.speak(data?.choices[0].message?.content, {
-      //     //   androidParams: {
-      //     //     KEY_PARAM_PAN: -1,
-      //     //     KEY_PARAM_VOLUME: 0.5,
-      //     //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-      //     //   },
-      //     // });
-
-        
-
-      //   }).then(()=>VoiceController(false))
-      // }
+      // VoiceController(true)
+      if(!IsTriger && assestant ){
+        fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer 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",
+          },
+          body: JSON.stringify({
+            // "prompt": inputMessage,
+            messages: [{ role: "user", content: result }],
+            // "model": "text-davinci-003",
+            model: "gpt-3.5-turbo",
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            console.log(data?.choices[0].message?.content);
+            setIsSpeak(data?.choices[0].message?.content)
+            TextToSpeech(data?.choices[0].message?.content)
+            triggerGenerate(true)
+            // Tts.speak(data?.choices[0].message?.content, {
+            //   androidParams: {
+            //     KEY_PARAM_PAN: -1,
+            //     KEY_PARAM_VOLUME: 0.5,
+            //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
+            //   },
+            // });
+    
+          
+    
+          })  
+          // setTimeout(function (){
+          //   VoiceController(false)
+          // }
+          //   , 5000);
+          
+        }
     }
   }, [result])
 
-  useEffect(() => {
-    console.log(IsTriger,"trigger*****");
-    if(IsTriger){
-    fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          "Bearer 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",
-      },
-      body: JSON.stringify({
-        // "prompt": inputMessage,
-        messages: [{ role: "user", content: result }],
-        // "model": "text-davinci-003",
-        model: "gpt-3.5-turbo",
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        console.log(data?.choices[0].message?.content);
-        setIsSpeak(data?.choices[0].message?.content)
-        TextToSpeech(data?.choices[0].message?.content)
+  // useEffect(() => {
+  //   console.log("isTrigger = ",IsTriger," trigger*****");
+  //   if(voiceJSusTrigr){
+  //   fetch("https://api.openai.com/v1/chat/completions", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization:
+  //         "Bearer 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",
+  //     },
+  //     body: JSON.stringify({
+  //       // "prompt": inputMessage,
+  //       messages: [{ role: "user", content: result }],
+  //       // "model": "text-davinci-003",
+  //       model: "gpt-3.5-turbo",
+  //     }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       console.log(data);
+  //       console.log(data?.choices[0].message?.content);
+  //       setIsSpeak(data?.choices[0].message?.content)
+  //       TextToSpeech(data?.choices[0].message?.content)
 
-        // Tts.speak(data?.choices[0].message?.content, {
-        //   androidParams: {
-        //     KEY_PARAM_PAN: -1,
-        //     KEY_PARAM_VOLUME: 0.5,
-        //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-        //   },
-        // });
+  //       // Tts.speak(data?.choices[0].message?.content, {
+  //       //   androidParams: {
+  //       //     KEY_PARAM_PAN: -1,
+  //       //     KEY_PARAM_VOLUME: 0.5,
+  //       //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
+  //       //   },
+  //       // });
 
       
 
-      })  
-      setTimeout(function (){
-        VoiceController(false)
-      }
-        , 5000);
+  //     })  
+  //     // setTimeout(function (){
+  //     //   VoiceController(false)
+  //     // }
+  //     //   , 5000);
       
-    }
+  //   }
 
-  }, [IsTriger])
+  // }, [IsTriger])
   
   
 
@@ -312,9 +304,9 @@ const VoiceController =  (data)=>{
 
 
 
-  useEffect(() => {
-    console.log(result);
-  })
+  // useEffect(() => {
+  //   console.log(result);
+  // })
 
 
 
