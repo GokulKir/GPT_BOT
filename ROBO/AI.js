@@ -23,6 +23,7 @@ import {
   responsiveWidth,
   responsiveFontSize
 } from "react-native-responsive-dimensions";
+import {TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom} from 'react-native-text-effects';
 
 export default function AI() {
 
@@ -72,14 +73,21 @@ export default function AI() {
 // })
 
 
-
+// Start recording //
 
   const startRecording = async () => {
     // Voice.onSpeechRecognized((res)=>console.log(res))
 
-    await Voice.start('en-Us')
+    await Voice.start('en-US');
+
+   
 
   };
+
+  // Start recording //
+
+
+  //Stop recording //
 
 
   const stopRecording = async () => {
@@ -94,6 +102,9 @@ export default function AI() {
   function stop() {
     Tts.stop();
   }
+
+    //Stop recording //
+
   
 
   // jestin xavier
@@ -149,10 +160,10 @@ const assistanceTrigger = (data) =>{
     console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
    
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa") && !assestant) {
+    if ((result === "Daliya" || result === "hi Daliya" || result === "hey Daliya") && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Alexa ")
+      TextToSpeech("HI i am Daliya ")
       assistanceTrigger(true)
     } 
     
@@ -166,6 +177,8 @@ const VoiceController =  (data)=>{
   
 }
 
+
+
   useEffect(() => {
     console.log('====================================');
     console.log(result );
@@ -178,7 +191,7 @@ const VoiceController =  (data)=>{
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer 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",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
@@ -193,6 +206,8 @@ const VoiceController =  (data)=>{
             console.log(data?.choices[0].message?.content);
             setIsSpeak(data?.choices[0].message?.content)
             TextToSpeech(data?.choices[0].message?.content)
+            
+            
             triggerGenerate(true)
             // Tts.speak(data?.choices[0].message?.content, {
             //   androidParams: {
@@ -310,6 +325,13 @@ const VoiceController =  (data)=>{
 
 
 
+   const Dimention = useWindowDimensions() ;
+
+
+   useEffect(() => {
+   
+   })
+
 
   return (
     <View style={styles.container}>
@@ -324,7 +346,7 @@ const VoiceController =  (data)=>{
 
   <View style={{top:40 , alignItems:'center'}}>
 
-    <ImageBackground style={{height:235 , width:235  }} imageStyle={{borderRadius:200}} source={require('../assets/Siri.gif')}>
+    <ImageBackground style={{height:responsiveWidth(30) , width:responsiveWidth(30)  }} imageStyle={{borderRadius:200}} source={{uri : "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif"}}>
 
     </ImageBackground>
 
@@ -332,18 +354,30 @@ const VoiceController =  (data)=>{
 
     <View style={{alignItems:'center' ,}}>
 
-      <View style={{ width:responsiveWidth(90) , height:responsiveHeight(30) , backgroundColor:'#000'  , alignItems:'center'}}>
+      <View style={{ width:244 , height:244 , backgroundColor:'#000'  , alignItems:'center'}}>
 
       <Text style={{color:'#fff' , fontSize:25 , fontWeight:'200'}}>{result}</Text>
 
       </View>
+
+
+      <View style={{alignItems:'center'}}>
+
+        {IsSpeak.length > 0 ?         <TextAnimationFadeIn style={{color:'#fff' , fontSize:responsiveFontSize(2.5), fontWeight:'300' }} value={IsSpeak} delay={100} duration={1000}  />
+
+ :   <TextAnimationFadeIn style={{color:'#fff' , fontSize:responsiveFontSize(2.5), fontWeight:'300' }} value={"Listening..."} delay={100} duration={1000}  /> }
+
+
+</View>
+
 
     </View>
    
 
     </View>
     
-
+    
+   
 
      
         <TouchableOpacity onPress={() => startRecording()} style={styles.floatingButton}>
@@ -354,7 +388,7 @@ const VoiceController =  (data)=>{
 
               <ImageBackground  style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
 
-                <Image style={{ width: 30, height: 30 }} source={require('../assets/Mic.png')} />
+                <Image style={{ width: 70, height: 70 }} source={require('../assets/Mic.png')} />
 
               </ImageBackground>
 
@@ -362,13 +396,18 @@ const VoiceController =  (data)=>{
 
               :
 
-              <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
+              // <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
 
-                <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
+              //   <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
 
 
-                </ImageBackground>
-              </TouchableOpacity>
+              //   </ImageBackground>
+              // </TouchableOpacity>
+              <ImageBackground  style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
+
+              <Image style={{ width: 30, height: 30 }} source={require('../assets/Mic.png')} />
+
+            </ImageBackground>
             }
           </View>
         </TouchableOpacity>
@@ -392,8 +431,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    width: 60,
-    height: 60,
+    width: responsiveWidth(8),
+    height: responsiveWidth(8),
     borderRadius: 30,
     backgroundColor: '#5a40ad',
     alignItems: 'center',
@@ -403,6 +442,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
+    borderRadius:200
   },
   buttonContainer: {
     width: '100%',
