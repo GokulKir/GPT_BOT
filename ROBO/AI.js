@@ -46,6 +46,7 @@ export default function AI() {
   const [IsOrNot , setIsOrNot] = useState(false)
   const [StartT , setStartT] = useState(false)
   const [WelcomSp , setWelcomSp] = useState('')
+  const [startTime, setstartTime] = useState(new Date())
 
   const setRecodingResult = (data)=>{
     
@@ -98,6 +99,7 @@ export default function AI() {
 
   // jestin xavier
   useEffect(() => {
+
  if(!IsTriger){
    startRecording()
  }
@@ -120,7 +122,7 @@ Tts.addEventListener('tts-finish', () => {
  Tts.speak(data, {
     androidParams: {
       KEY_PARAM_PAN: -1,
-      KEY_PARAM_VOLUME: 0.3,
+      KEY_PARAM_VOLUME: 0.5,
       KEY_PARAM_STREAM: 'STREAM_MUSIC',
     },
    
@@ -146,13 +148,14 @@ const assistanceTrigger = (data) =>{
 
   useEffect(() => {
 
-    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
+    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa"), "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
-   
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa") && !assestant) {
+ 
+
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Alexa ")
+      TextToSpeech("HI i am Alexa from Devlacus")
       assistanceTrigger(true)
     } 
     
@@ -170,19 +173,28 @@ const VoiceController =  (data)=>{
     console.log('====================================');
     console.log(result );
     console.log('====================================');
+    const timeDifference = new Date() - startTime
+    console.log('====================================');
+    console.log(timeDifference);
+    console.log('====================================');
+    if(timeDifference > 15000 && result.length < 0 && assestant){
+      assistanceTrigger(true)
+    }
+    
     if (result.length > 0 ) {
       // VoiceController(true)
+      let FilterData = result.replace(/alexa/gi, "");
       if(!IsTriger && assestant ){
         fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer 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",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
-            messages: [{ role: "user", content: result }],
+            messages: [{ role: "user", content: FilterData }],
             // "model": "text-davinci-003",
             model: "gpt-3.5-turbo",
           }),
