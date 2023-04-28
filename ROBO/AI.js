@@ -190,7 +190,7 @@ const VoiceController =  (data)=>{
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer ",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
