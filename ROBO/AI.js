@@ -24,11 +24,34 @@ import {
   responsiveFontSize
 } from "react-native-responsive-dimensions";
 import { TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom } from 'react-native-text-effects';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import AnswerAI from './AnswerAI';
+
+
+
+
+
 
 export default function AI(props) {
 
-  const navigation = useNavigation()
+
+
+//   const route = useRoute()
+// /
+
+//    useEffect(()=>{
+    
+//     if (props.route.params) {
+
+//       const {StopT} = props.route.params
+//        console.log("8888888",props.route.params);
+      
+//     }
+
+    
+//    },[props])
+   
+
 
   LogBox.ignoreLogs(['new NativeEventEmitter']);  // Ignore log notification by message
   LogBox.ignoreAllLogs();  // Ignore all log notifications
@@ -50,7 +73,8 @@ export default function AI(props) {
   const [IsOrNot, setIsOrNot] = useState(false)
   const [StartT, setStartT] = useState(false)
   const [WelcomSp, setWelcomSp] = useState('')
-  const [secondS , setSecondS] = useState(false)
+  const [secondS, setSecondS] = useState(false)
+  const [startTime, setstartTime] = useState(new Date())
 
   const setRecodingResult = (data) => {
 
@@ -87,6 +111,8 @@ export default function AI(props) {
 
 
   };
+
+
 
   // Start recording //
 
@@ -135,7 +161,7 @@ export default function AI(props) {
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.3,
+        KEY_PARAM_VOLUME: 0.5,
         KEY_PARAM_STREAM: 'STREAM_MUSIC',
       },
 
@@ -150,6 +176,10 @@ export default function AI(props) {
 
   const triggerGenerate = (data) => {
     setIsTriger(data)
+    if (!data) {
+      Responcenavigate(false)
+
+    }
   }
   const initialSetResult = () => {
     setResult("")
@@ -164,10 +194,16 @@ export default function AI(props) {
     console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa") && !assestant) {
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Daliya ")
+      TextToSpeech("HI i am Alexa from Devlacus")
+      assistanceTrigger(true)
+    }
+
+    const timeDifference = new Date() - startTime;
+
+    if (timeDifference > 15000 && result.length < 0 && assestant) {
       assistanceTrigger(true)
     }
 
@@ -181,11 +217,16 @@ export default function AI(props) {
 
   }
 
-  const Responcenavigate = (data) =>{
-     
+  const Responcenavigate = (data) => {
+
     setSecondS(data)
 
   }
+
+  useEffect(() => {
+    console.log(secondS)
+  }, [secondS])
+
 
 
 
@@ -195,17 +236,18 @@ export default function AI(props) {
     console.log('====================================');
     if (result.length > 0) {
       // VoiceController(true)
+      let FilterData = result.replace(/alexa/gi, "");
       if (!IsTriger && assestant) {
         fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer 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",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
-            messages: [{ role: "user", content: result }],
+            messages: [{ role: "user", content: FilterData }],
             // "model": "text-davinci-003",
             model: "gpt-3.5-turbo",
           }),
@@ -214,18 +256,17 @@ export default function AI(props) {
           .then((data) => {
             console.log(data);
             console.log(data?.choices[0].message?.content);
-            
-           navigation.navigate("AnswerAI" , {data : data?.choices[0].message?.content})
 
-           
+            //  navigation.navigate("AnswerAI" , {data : data?.choices[0].message?.content , IsTriger})
+          
+            Responcenavigate(true)
 
             setIsSpeak(data?.choices[0].message?.content)
             TextToSpeech(data?.choices[0].message?.content)
 
           
 
-
-            triggerGenerate(true)
+            // triggerGenerate(true)
             // Tts.speak(data?.choices[0].message?.content, {
             //   androidParams: {
             //     KEY_PARAM_PAN: -1,
@@ -233,6 +274,7 @@ export default function AI(props) {
             //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
             //   },
             // });
+
 
 
 
@@ -355,26 +397,25 @@ export default function AI(props) {
   return (
     <View style={styles.container}>
 
-    {secondS == false  ?  
 
 
 
-      <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'space-between' }}>
+     {!secondS? <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'space-between' }}>
 
 
 
 
-        <View style={{ top: 40, alignItems: 'center'  }}>
+        <View style={{ top: 40, alignItems: 'center' }}>
 
 
-         
-            <ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200  , flex : 1}} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
 
-            </ImageBackground>
+          <ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200, flex: 1 }} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
+
+          </ImageBackground>
 
 
-       
-          <View style={{ alignItems: 'center', flex:1 }}>
+
+          <View style={{ alignItems: 'center', flex: 1 }}>
 
             {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
 
@@ -384,10 +425,15 @@ export default function AI(props) {
 
 
             <View style={{ alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
 
-              {IsSpeak.length > 0 ? <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={IsSpeak} delay={100} duration={1000} />
+              {assestant ?
 
-                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Listening..."} delay={100} duration={1000} />}
+                (result.length > 0 ? null : <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} >Listening....</Text>)
+
+                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Alexa"} delay={100} duration={1000} />
+              }
+
 
 
             </View>
@@ -410,7 +456,7 @@ export default function AI(props) {
 
               <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
 
-                <Image style={{ width: 70, height: 70 }} source={require('../assets/Mic.png')} />
+                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
 
               </ImageBackground>
 
@@ -425,9 +471,9 @@ export default function AI(props) {
 
               //   </ImageBackground>
               // </TouchableOpacity>
-              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
+              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: "#19ecf7", borderRadius: 200 }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
 
-                <Image style={{ width:responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
+                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
 
               </ImageBackground>
             }
@@ -435,8 +481,11 @@ export default function AI(props) {
         </TouchableOpacity>
 
       </View>
+    :
+    <AnswerAI Data = {IsSpeak} />  
+    
+    }
 
-        : <AnswerAI/>  }
 
 
 
