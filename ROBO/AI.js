@@ -243,7 +243,7 @@ export default function AI(props) {
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer ",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
