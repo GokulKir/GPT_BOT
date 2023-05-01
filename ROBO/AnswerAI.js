@@ -5,6 +5,7 @@ import { responsiveFontSize, responsiveHeight, responsiveWidth } from 'react-nat
 import {TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom} from 'react-native-text-effects';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AnimatedText from './AnimatedText'
 
 export default function AnswerAI({Data}) {
 
@@ -46,19 +47,16 @@ let data = Data;
 </TouchableOpacity> */}
 
 {/* </View> */}
-<View style={{flex:1}}>
+<View style={{flex:1,}}>
+    <View style={{alignItems:'center',justifyContent:'center'}}>
+    <AnimatedText text ={data}/>
+
+    </View>
+
         <ScrollView>
             <View style={{width:Dimention.width  , backgroundColor:'#000' , alignItems:'center' ,}}>
 
                 <View style={{width:Dimention.width  - 40, height : Dimention.height /2.5 , backgroundColor:'#000' , top:20}}>
-
-
-                <Text  style={{color:'#fff' , fontSize:responsiveFontSize(1.6) , fontWeight:'300' , letterSpacing: 3,  }}>{data}</Text>
-
-                {/* <TextAnimationFadeIn  style={{color:'#fff' , fontSize:responsiveFontSize(1.6) , fontWeight:'300' , letterSpacing: 3,  }}  value={Ipsum} /> */}
-
-
-
                 </View>
 
 
