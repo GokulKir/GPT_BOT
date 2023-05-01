@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput ,  } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput, } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Voice from '@react-native-community/voice';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -23,9 +23,35 @@ import {
   responsiveWidth,
   responsiveFontSize
 } from "react-native-responsive-dimensions";
-import {TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom} from 'react-native-text-effects';
+import { TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom } from 'react-native-text-effects';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import AnswerAI from './AnswerAI';
 
-export default function AI() {
+
+
+
+
+
+export default function AI(props) {
+
+
+
+//   const route = useRoute()
+// /
+
+//    useEffect(()=>{
+    
+//     if (props.route.params) {
+
+//       const {StopT} = props.route.params
+//        console.log("8888888",props.route.params);
+      
+//     }
+
+    
+//    },[props])
+   
+
 
   LogBox.ignoreLogs(['new NativeEventEmitter']);  // Ignore log notification by message
   LogBox.ignoreAllLogs();  // Ignore all log notifications
@@ -44,20 +70,22 @@ export default function AI() {
   const [subTrigger, setSubtrigger] = useState(false)
   const [inputMessage, setInputMessage] = useState("");
   const [outputMessage, setOutputMessage] = useState("The output message");
-  const [IsOrNot , setIsOrNot] = useState(false)
-  const [StartT , setStartT] = useState(false)
-  const [WelcomSp , setWelcomSp] = useState('')
+  const [IsOrNot, setIsOrNot] = useState(false)
+  const [StartT, setStartT] = useState(false)
+  const [WelcomSp, setWelcomSp] = useState('')
+  const [secondS, setSecondS] = useState(false)
+  const [startTime, setstartTime] = useState(new Date())
 
-  const setRecodingResult = (data)=>{
-    
+  const setRecodingResult = (data) => {
+
     setResult(data)
   }
-  
+
 
   Voice.onSpeechEnd = () => setIsRecording(false)
   Voice.onSpeechError = err => setError(err.error)
   Voice.onSpeechResults = (result) => setRecodingResult(result.value[0])
-  
+
 
   // const handleTextInputMessage = (text) => {
   //   console.log(text);
@@ -65,24 +93,26 @@ export default function AI() {
   // };
 
 
-// useEffect(()=>{
-//   setInterval(() => {
-//     setStartT(true)
-    
-//   }, 2500);
-// })
+  // useEffect(()=>{
+  //   setInterval(() => {
+  //     setStartT(true)
+
+  //   }, 2500);
+  // })
 
 
-// Start recording //
+  // Start recording //
 
   const startRecording = async () => {
     // Voice.onSpeechRecognized((res)=>console.log(res))
 
     await Voice.start('en-US');
 
-   
+
 
   };
+
+
 
   // Start recording //
 
@@ -91,11 +121,11 @@ export default function AI() {
 
 
   const stopRecording = async () => {
-// console.log("stpo recoding*****");
+    // console.log("stpo recoding*****");
     setStarted(false)
-    setLoading(false) 
+    setLoading(false)
     setIsOrNot(true)
-     await Voice.stop()
+    await Voice.stop()
 
   }
 
@@ -103,99 +133,121 @@ export default function AI() {
     Tts.stop();
   }
 
-    //Stop recording //
+  //Stop recording //
 
-  
+
 
   // jestin xavier
   useEffect(() => {
- if(!IsTriger){
-   startRecording()
- }
- else{
-  stopRecording()
- }
-  }, [startRecording,IsTriger])
+    if (!IsTriger) {
+      startRecording()
+    }
+    else {
+      stopRecording()
+    }
+  }, [startRecording, IsTriger])
 
 
 
 
-  const TextToSpeech = (data)=>{
+  const TextToSpeech = (data) => {
     // console.log(IsTriger,'text to speech');
-// if(IsTriger){
+    // if(IsTriger){
 
-Tts.addEventListener('tts-finish', () => {
-  triggerGenerate(false)
-  console.log('Speech finished')
-} );
- Tts.speak(data, {
-    androidParams: {
-      KEY_PARAM_PAN: -1,
-      KEY_PARAM_VOLUME: 0.3,
-      KEY_PARAM_STREAM: 'STREAM_MUSIC',
-    },
-   
+    Tts.addEventListener('tts-finish', () => {
+      triggerGenerate(false)
+      console.log('Speech finished')
+    });
+    Tts.speak(data, {
+      androidParams: {
+        KEY_PARAM_PAN: -1,
+        KEY_PARAM_VOLUME: 0.5,
+        KEY_PARAM_STREAM: 'STREAM_MUSIC',
+      },
+
+    }
+
+
+    )
+    //  }
   }
-  
 
- )
-//  }
+
+
+  const triggerGenerate = (data) => {
+    setIsTriger(data)
+    if (!data) {
+      Responcenavigate(false)
+
+    }
   }
-
-
-
-const triggerGenerate =(data)=>{
-  setIsTriger(data)
-}
-const initialSetResult = ()=>{
-  setResult("")
-}
-const assistanceTrigger = (data) =>{
-  setAssistanc(data)
-}
+  const initialSetResult = () => {
+    setResult("")
+  }
+  const assistanceTrigger = (data) => {
+    setAssistanc(data)
+  }
 
 
   useEffect(() => {
 
     console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
-   
-    if ((result === "Daliya" || result === "hi Daliya" || result === "hey Daliya") && !assestant) {
+
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Daliya ")
+      TextToSpeech("HI i am Alexa from Devlacus")
       assistanceTrigger(true)
-    } 
-    
+    }
+
+    const timeDifference = new Date() - startTime;
+
+    if (timeDifference > 15000 && result.length < 0 && assestant) {
+      assistanceTrigger(true)
+    }
+
 
   }, [result])
 
 
 
-const VoiceController =  (data)=>{
-  setIsTriger(data)
-  
-}
+  const VoiceController = (data) => {
+    setIsTriger(data)
+
+  }
+
+  const Responcenavigate = (data) => {
+
+    setSecondS(data)
+
+  }
+
+  useEffect(() => {
+    console.log(secondS)
+  }, [secondS])
+
 
 
 
   useEffect(() => {
     console.log('====================================');
-    console.log(result );
+    console.log(result);
     console.log('====================================');
-    if (result.length > 0 ) {
+    if (result.length > 0) {
       // VoiceController(true)
-      if(!IsTriger && assestant ){
+      let FilterData = result.replace(/alexa/gi, "");
+      if (!IsTriger && assestant) {
         fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization:
-              "Bearer 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",
+              "Bearer ",
           },
           body: JSON.stringify({
             // "prompt": inputMessage,
-            messages: [{ role: "user", content: result }],
+            messages: [{ role: "user", content: FilterData }],
             // "model": "text-davinci-003",
             model: "gpt-3.5-turbo",
           }),
@@ -204,11 +256,17 @@ const VoiceController =  (data)=>{
           .then((data) => {
             console.log(data);
             console.log(data?.choices[0].message?.content);
+
+            //  navigation.navigate("AnswerAI" , {data : data?.choices[0].message?.content , IsTriger})
+          
+            Responcenavigate(true)
+
             setIsSpeak(data?.choices[0].message?.content)
             TextToSpeech(data?.choices[0].message?.content)
-            
-            
-            triggerGenerate(true)
+
+          
+
+            // triggerGenerate(true)
             // Tts.speak(data?.choices[0].message?.content, {
             //   androidParams: {
             //     KEY_PARAM_PAN: -1,
@@ -216,16 +274,17 @@ const VoiceController =  (data)=>{
             //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
             //   },
             // });
-    
-          
-    
-          })  
-          // setTimeout(function (){
-          //   VoiceController(false)
-          // }
-          //   , 5000);
-          
-        }
+
+
+
+
+          })
+        // setTimeout(function (){
+        //   VoiceController(false)
+        // }
+        //   , 5000);
+
+      }
     }
   }, [result])
 
@@ -261,19 +320,19 @@ const VoiceController =  (data)=>{
   //       //   },
   //       // });
 
-      
+
 
   //     })  
   //     // setTimeout(function (){
   //     //   VoiceController(false)
   //     // }
   //     //   , 5000);
-      
+
   //   }
 
   // }, [IsTriger])
-  
-  
+
+
 
 
 
@@ -325,70 +384,79 @@ const VoiceController =  (data)=>{
 
 
 
-   const Dimention = useWindowDimensions() ;
+  const Dimention = useWindowDimensions();
 
 
-   useEffect(() => {
-   
-   })
+
+
+  useEffect(() => {
+
+  })
 
 
   return (
     <View style={styles.container}>
 
 
-   
-   
 
-  <View style={{flex : 1 , backgroundColor:'#000' , alignItems:'center' , justifyContent:'space-between' }}>
 
-    
-
-  <View style={{top:40 , alignItems:'center'}}>
-
-    <ImageBackground style={{height:responsiveWidth(30) , width:responsiveWidth(30)  }} imageStyle={{borderRadius:200}} source={{uri : "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif"}}>
-
-    </ImageBackground>
+     {!secondS? <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'space-between' }}>
 
 
 
-    <View style={{alignItems:'center' ,}}>
 
-      <View style={{ width:244 , height:244 , backgroundColor:'#000'  , alignItems:'center'}}>
-
-      <Text style={{color:'#fff' , fontSize:25 , fontWeight:'200'}}>{result}</Text>
-
-      </View>
+        <View style={{ top: 40, alignItems: 'center' }}>
 
 
-      <View style={{alignItems:'center'}}>
 
-        {IsSpeak.length > 0 ?         <TextAnimationFadeIn style={{color:'#fff' , fontSize:responsiveFontSize(2.5), fontWeight:'300' }} value={IsSpeak} delay={100} duration={1000}  />
+          <ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200, flex: 1 }} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
 
- :   <TextAnimationFadeIn style={{color:'#fff' , fontSize:responsiveFontSize(2.5), fontWeight:'300' }} value={"Listening..."} delay={100} duration={1000}  /> }
-
-
-</View>
+          </ImageBackground>
 
 
-    </View>
-   
 
-    </View>
-    
-    
-   
+          <View style={{ alignItems: 'center', flex: 1 }}>
 
-     
+            {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
+
+              <Text style={{ color: '#fff', fontSize: 25, fontWeight: '200' }}>{result}</Text>
+
+            </View> */}
+
+
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
+
+              {assestant ?
+
+                (result.length > 0 ? null : <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} >Listening....</Text>)
+
+                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Alexa"} delay={100} duration={1000} />
+              }
+
+
+
+            </View>
+
+
+          </View>
+
+
+        </View>
+
+
+
+
+
         <TouchableOpacity onPress={() => startRecording()} style={styles.floatingButton}>
           <View style={styles.buttonContainer}>
             {result == false ?
 
 
 
-              <ImageBackground  style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
+              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
 
-                <Image style={{ width: 70, height: 70 }} source={require('../assets/Mic.png')} />
+                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
 
               </ImageBackground>
 
@@ -403,16 +471,21 @@ const VoiceController =  (data)=>{
 
               //   </ImageBackground>
               // </TouchableOpacity>
-              <ImageBackground  style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
+              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: "#19ecf7", borderRadius: 200 }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
 
-              <Image style={{ width: 30, height: 30 }} source={require('../assets/Mic.png')} />
+                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
 
-            </ImageBackground>
+              </ImageBackground>
             }
           </View>
         </TouchableOpacity>
 
-        </View>
+      </View>
+    :
+    <AnswerAI Data = {IsSpeak} />  
+    
+    }
+
 
 
 
@@ -442,7 +515,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-    borderRadius:200
+    borderRadius: 200
   },
   buttonContainer: {
     width: '100%',
