@@ -48,7 +48,7 @@ let data = Data;
 
 {/* </View> */}
 <View style={{flex:1,}}>
-    <View style={{alignItems:'center',justifyContent:'center'}}>
+    <View style={{alignItems:'center',justifyContent:'center',paddingBottom:10}}>
     <AnimatedText text ={data}/>
 
     </View>

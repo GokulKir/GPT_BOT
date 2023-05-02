@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput, } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput,Button } from 'react-native'
+import React, { useState, useEffect,useCallback } from 'react'
 import Voice from '@react-native-community/voice';
 import { ScrollView } from 'react-native-gesture-handler';
+import SystemSetting from 'react-native-system-setting';
 import Tts from 'react-native-tts';
 import axios from "axios";
 
@@ -28,7 +29,7 @@ import {
 import { TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom } from 'react-native-text-effects';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AnswerAI from './AnswerAI';
-
+import useDeviceVolume from './customhook/useDeviceVolume'
 
 
 
@@ -77,6 +78,8 @@ export default function AI(props) {
   const [WelcomSp, setWelcomSp] = useState('')
   const [secondS, setSecondS] = useState(false)
   const [startTime, setstartTime] = useState(new Date())
+  const { volume, increaseFullDeviceVolume,decreaseFullDeviceVolume  } = useDeviceVolume();
+
 
   const setRecodingResult = (data) => {
 
@@ -106,8 +109,11 @@ export default function AI(props) {
   // Start recording //
 
   const startRecording = async () => {
+    decreaseFullDeviceVolume()
     // Voice.onSpeechRecognized((res)=>console.log(res))
-
+    console.log('====================================');
+    console.log('Recoding voice',IsTriger);
+    console.log('====================================');
     await Voice.start('en-US');
 
 
@@ -153,17 +159,19 @@ export default function AI(props) {
 
 
   const TextToSpeech = (data) => {
+    increaseFullDeviceVolume()
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
 
     Tts.addEventListener('tts-finish', () => {
-      triggerGenerate(false)
       console.log('Speech finished')
+      triggerGenerate(false)
+
     });
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.5,
+        KEY_PARAM_VOLUME: 1,
         KEY_PARAM_STREAM: 'STREAM_MUSIC',
       },
 
@@ -175,31 +183,50 @@ export default function AI(props) {
   }
 
 
-
-  const triggerGenerate = (data) => {
+/**
+ * 
+ * @param {boolean} boolean 
+ * this function is used to controll the trigger of the mic when it start to speaking 
+ */
+const triggerGenerate = useCallback(
+  (data) => {
     setIsTriger(data)
     if (!data) {
       Responcenavigate(false)
-
     }
-  }
-  const initialSetResult = () => {
+  },
+  [setIsTriger],
+)
+
+const initialSetResult = useCallback(
+  () => {
     setResult("")
-  }
-  const assistanceTrigger = (data) => {
+  },
+  [setResult],
+)
+
+
+
+const assistanceTrigger = useCallback(
+  (data) => {
     setAssistanc(data)
-  }
+  },
+  [setAssistanc],
+)
+
+
+ 
 
 
   useEffect(() => {
 
-    console.log(result, result === "Jasmine" || result === "hi Jasmine" || result === "hey Jasmine", "******hey dana*****");
+    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
-    if ((result === "Jasmine" || result === "hi Jasmine" || result === "hey Jasmine" || result.includes("Jasmine")) && !assestant) {
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Jasmine from Devlacus")
+      TextToSpeech("HI i am Alexa from Devlacus")
       assistanceTrigger(true)
     }
 
@@ -214,10 +241,6 @@ export default function AI(props) {
 
 
 
-  const VoiceController = (data) => {
-    setIsTriger(data)
-
-  }
 
   const Responcenavigate = (data) => {
 
@@ -238,15 +261,14 @@ export default function AI(props) {
     console.log('====================================');
     if (result.length > 0) {
       // VoiceController(true)
-      let FilterData = result.replace(/jasmine/gi, "");
+      let FilterData = result.replace(/alexa/gi, "");
       if (!IsTriger && assestant) {
-
         axios({
           method: "post",
           url: "https://api.openai.com/v1/chat/completions",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer"
+            Authorization: "Bearer sk-"
           },
           data: {
             messages: [{ role: "user", content: FilterData }],
@@ -255,18 +277,21 @@ export default function AI(props) {
         })
           .then((res) => {
             console.log(res.data);
-            console.log(res.data?.choices[0].message?.content);
+            const message = res.data?.choices[0]?.message?.content;
+            console.log(message);
         
+            setIsSpeak(message?.trim());
+            increaseFullDeviceVolume();
+            TextToSpeech(message);
+            
             Responcenavigate(true);
-        
-            setIsSpeak(res.data?.choices[0].message?.content.trim());
-            TextToSpeech(res.data?.choices[0].message?.content);
+            triggerGenerate(true);
           })
           .catch((error) => {
             console.error(error);
-          });
-        
+          });      
       }
+      
     }
   }, [result])
 
@@ -274,7 +299,6 @@ export default function AI(props) {
 
 
   const Dimention = useWindowDimensions();
-
 
 
 
@@ -320,7 +344,7 @@ export default function AI(props) {
 
                 (result.length > 0 ? null : <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} >Listening....</Text>)
 
-                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Jasmine"} delay={100} duration={1000} />
+                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Alexa"} delay={100} duration={1000} />
               }
 
 
@@ -330,7 +354,11 @@ export default function AI(props) {
 
           </View>
 
-
+          <View>
+      <Text>Device Volume: {Math.round(volume * 100)}</Text>
+      <Button title="Decrease Volume" onPress={decreaseFullDeviceVolume} />
+      <Button title="Increase Volume" onPress={increaseFullDeviceVolume} />
+    </View>
         </View>
 
 
@@ -367,6 +395,7 @@ export default function AI(props) {
               </ImageBackground>
             }
           </View>
+
         </TouchableOpacity>
 
       </View>
