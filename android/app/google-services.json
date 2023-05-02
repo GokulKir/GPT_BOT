@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "489681346782",
+    "project_id": "gptbot-2537f",
+    "storage_bucket": "gptbot-2537f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489681346782:android:8163082ae143e0143e624f",
+        "android_client_info": {
+          "package_name": "com.gpt_m"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "489681346782-qlf301evb797u1p52m2fgo74nkh3jfmk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjJWDSqOqBnypfM63F3qj2o4ipxHVpFQY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "489681346782-qlf301evb797u1p52m2fgo74nkh3jfmk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

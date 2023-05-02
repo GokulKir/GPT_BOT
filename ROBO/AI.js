@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react'
 import Voice from '@react-native-community/voice';
 import { ScrollView } from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
+import axios from "axios";
+import { Modal, Portal, Button, Provider , Snackbar } from 'react-native-paper';
 import {
   BallIndicator,
   BarIndicator,
@@ -32,8 +34,16 @@ import AnswerAI from './AnswerAI';
 
 
 
-export default function AI(props) {
 
+
+
+
+export default function AI(props) {
+  const [visible, setVisible] = React.useState(false);
+
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
+  const containerStyle = {backgroundColor: 'white', padding: 20};
 
 
 //   const route = useRoute()
@@ -50,7 +60,21 @@ export default function AI(props) {
 
     
 //    },[props])
-   
+
+
+
+ const StopRecording = () => {
+  Tts.addEventListener
+  Voice.destroy()
+  Tts.stop()
+  
+}
+
+const NetworkError = () =>{
+
+
+}
+
 
 
   LogBox.ignoreLogs(['new NativeEventEmitter']);  // Ignore log notification by message
@@ -129,8 +153,18 @@ export default function AI(props) {
 
   }
 
+  /**
+   * Gokul code
+   */
   function stop() {
     Tts.stop();
+    Voice.destroy() 
+    setSecondS(false)
+
+  }
+
+  const Return = () =>{ 
+
   }
 
   //Stop recording //
@@ -161,7 +195,7 @@ export default function AI(props) {
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.5,
+        KEY_PARAM_VOLUME: 0.9,
         KEY_PARAM_STREAM: 'STREAM_MUSIC',
       },
 
@@ -191,10 +225,10 @@ export default function AI(props) {
 
   useEffect(() => {
 
-    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
+    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey Alexa*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
+    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant ) {
       triggerGenerate(true)
       initialSetResult()
       TextToSpeech("HI i am Alexa from Devlacus")
@@ -238,150 +272,48 @@ export default function AI(props) {
       // VoiceController(true)
       let FilterData = result.replace(/alexa/gi, "");
       if (!IsTriger && assestant) {
-        fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
+
+        axios({
+          method: "post",
+          url: "https://api.openai.com/v1/chat/completions",
           headers: {
             "Content-Type": "application/json",
-            Authorization:
-              "Bearer ",
+            Authorization: "Bearer "
           },
-          body: JSON.stringify({
-            // "prompt": inputMessage,
+          data: {
             messages: [{ role: "user", content: FilterData }],
-            // "model": "text-davinci-003",
-            model: "gpt-3.5-turbo",
-          }),
+            model: "gpt-3.5-turbo"
+          }
         })
-          .then((res) => res.json())
-          .then((data) => {
-            console.log(data);
-            console.log(data?.choices[0].message?.content);
-
-            //  navigation.navigate("AnswerAI" , {data : data?.choices[0].message?.content , IsTriger})
-          
-            Responcenavigate(true)
-
-            setIsSpeak(data?.choices[0].message?.content)
-            TextToSpeech(data?.choices[0].message?.content)
-
-          
-
-            // triggerGenerate(true)
-            // Tts.speak(data?.choices[0].message?.content, {
-            //   androidParams: {
-            //     KEY_PARAM_PAN: -1,
-            //     KEY_PARAM_VOLUME: 0.5,
-            //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-            //   },
-            // });
-
-
-
-
+          .then((res) => {
+            console.log(res.data);
+            console.log(res.data?.choices[0].message?.content);
+        
+            Responcenavigate(true);
+        
+            setIsSpeak(res.data?.choices[0].message?.content.trim());
+            TextToSpeech(res.data?.choices[0].message?.content);
           })
-        // setTimeout(function (){
-        //   VoiceController(false)
-        // }
-        //   , 5000);
-
+          .catch((error) => {
+            console.error(error);
+            console.log(error.message);
+           showModal()
+          });
+        
       }
     }
   }, [result])
-
-  // useEffect(() => {
-  //   console.log("isTrigger = ",IsTriger," trigger*****");
-  //   if(voiceJSusTrigr){
-  //   fetch("https://api.openai.com/v1/chat/completions", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization:
-  //         "Bearer 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",
-  //     },
-  //     body: JSON.stringify({
-  //       // "prompt": inputMessage,
-  //       messages: [{ role: "user", content: result }],
-  //       // "model": "text-davinci-003",
-  //       model: "gpt-3.5-turbo",
-  //     }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       console.log(data?.choices[0].message?.content);
-  //       setIsSpeak(data?.choices[0].message?.content)
-  //       TextToSpeech(data?.choices[0].message?.content)
-
-  //       // Tts.speak(data?.choices[0].message?.content, {
-  //       //   androidParams: {
-  //       //     KEY_PARAM_PAN: -1,
-  //       //     KEY_PARAM_VOLUME: 0.5,
-  //       //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-  //       //   },
-  //       // });
-
-
-
-  //     })  
-  //     // setTimeout(function (){
-  //     //   VoiceController(false)
-  //     // }
-  //     //   , 5000);
-
-  //   }
-
-  // }, [IsTriger])
-
-
-
-
-
-
-
-  // const onSpeechResults = async (e) => {
-  //   setRecognized(e.value[0]);
-  //   console.log(e.value[0]);
-  //   if (recognized === 'start conversation') {
-  //     const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-  //       prompt: 'start conversation',
-  //       max_tokens: 100,
-  //       n: 1,
-  //       stop: '.',
-  //       temperature: 0.5,
-  //     }, {
-  //       headers: {
-  //         'Authorization': 'Bearer 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',
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     setMessage(response.data.choices[0].text);
-  //   } else if (recognized === 'send message') {
-  //     const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-  //       prompt: 'send message',
-  //       max_tokens: 100,
-  //       n: 1,
-  //       stop: '.',
-  //       temperature: 0.5,
-  //     }, {
-  //       headers: {
-  //         'Authorization': 'Bearer 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',
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     setMessage(response.data.choices[0].text);
-  //   } else if (recognized === 'end conversation') {
-  //     setMessage('Goodbye!');
-  //   }
-  // };
-
-  // Voice.onSpeechResults = onSpeechResults;
-
-
-
-  // useEffect(() => {
-  //   console.log(result);
-  // })
-
+/**
+ * The DistroySpeech function is used to distroy the text to speech and it will navigate to home screen
+ */
+   const DistroySpeech = () => {
+    Tts.addEventListener
+    // Voice.destroy()
+    Tts.stop()
+    Responcenavigate(false)
+    startRecording()
+    setResult("")
+  }
 
 
   const Dimention = useWindowDimensions();
@@ -404,15 +336,30 @@ export default function AI(props) {
 
 
 
+<View style={{top:40}}>
+     {visible == true ?  
+     
+     <View style={{width : responsiveWidth(50) , height:responsiveHeight(70) , backgroundColor:'#000' , elevation:3  , borderRadius:40 , borderWidth:1 , borderColor:'#DDD'}}>
+     <Provider >
 
-        <View style={{ top: 40, alignItems: 'center' }}>
+
+<Button style={{marginTop: 30}} onPress={showModal}>
+ Show
+</Button>
+</Provider> 
+
+</View>
+
+: 
+<ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200, flex: 1 }} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
+
+</ImageBackground>
 
 
+    
+    }
 
-          <ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200, flex: 1 }} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
-
-          </ImageBackground>
-
+         
 
 
           <View style={{ alignItems: 'center', flex: 1 }}>
@@ -423,9 +370,16 @@ export default function AI(props) {
 
             </View> */}
 
+              
+            <View style={{ alignItems: 'center', }}>
 
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
+            {visible === true  ?  
+               
+               null
+
+              :  <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
+
+            }
 
               {assestant ?
 
@@ -437,10 +391,9 @@ export default function AI(props) {
 
 
             </View>
-
-
+           
           </View>
-
+            
 
         </View>
 
@@ -480,9 +433,19 @@ export default function AI(props) {
           </View>
         </TouchableOpacity>
 
+         
+
+  
+
+
+        
+
+
+       
+
       </View>
     :
-    <AnswerAI Data = {IsSpeak} />  
+    <AnswerAI Data = {IsSpeak} stop = {DistroySpeech} />  
     
     }
 
