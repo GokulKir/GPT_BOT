@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput, } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useCallback } from 'react'
 import Voice from '@react-native-community/voice';
 import { ScrollView } from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
@@ -27,9 +27,12 @@ import {
 } from "react-native-responsive-dimensions";
 import { TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom } from 'react-native-text-effects';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import moment from 'moment';
 import AnswerAI from './AnswerAI';
+import useDeviceVolume from './customhook/useDeviceVolume'
 
-
+import {Collection,KeyCollection,TriggerWord} from './customhook/BackendServer'
+import AnimateTriggerText from './AnimateTriggerText';
 
 
 
@@ -98,7 +101,10 @@ const NetworkError = () =>{
   const [StartT, setStartT] = useState(false)
   const [WelcomSp, setWelcomSp] = useState('')
   const [secondS, setSecondS] = useState(false)
+  const [API_KEY,SET_API_KEY] = useState();
   const [startTime, setstartTime] = useState(new Date())
+  const { volume, increaseFullDeviceVolume,decreaseFullDeviceVolume  } = useDeviceVolume();
+  const [name, setName] = useState("Sonic")
 
   const setRecodingResult = (data) => {
 
@@ -128,14 +134,35 @@ const NetworkError = () =>{
   // Start recording //
 
   const startRecording = async () => {
+    decreaseFullDeviceVolume()
     // Voice.onSpeechRecognized((res)=>console.log(res))
-
+    console.log('====================================');
+    console.log('Recoding voice',IsTriger);
+    console.log('====================================');
     await Voice.start('en-US');
 
 
 
   };
 
+
+  useEffect(() => {
+
+    TriggerWord.get().then((data)=> data.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data().triggerName);
+     let triggerName = doc.data().triggerName
+      setName(triggerName)
+    }))
+
+    let key = ""
+    KeyCollection.get().then((data)=> data.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data()?.DevBotKey);
+     key =  doc.data()?.DevBotKey
+     SET_API_KEY(key)
+    }))
+  
+  }, [])
+  
 
 
   // Start recording //
@@ -145,7 +172,7 @@ const NetworkError = () =>{
 
 
   const stopRecording = async () => {
-    // console.log("stpo recoding*****");
+    console.log("stpo recoding*****");
     setStarted(false)
     setLoading(false)
     setIsOrNot(true)
@@ -181,21 +208,20 @@ const NetworkError = () =>{
     }
   }, [startRecording, IsTriger])
 
-
-
-
   const TextToSpeech = (data) => {
+    increaseFullDeviceVolume()
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
 
     Tts.addEventListener('tts-finish', () => {
-      triggerGenerate(false)
       console.log('Speech finished')
+      triggerGenerate(false)
+
     });
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.9,
+        KEY_PARAM_VOLUME: 1,
         KEY_PARAM_STREAM: 'STREAM_MUSIC',
       },
 
@@ -207,31 +233,49 @@ const NetworkError = () =>{
   }
 
 
-
-  const triggerGenerate = (data) => {
+ 
+/**
+ * 
+ * @param {boolean} boolean 
+ * this function is used to controll the trigger of the mic when it start to speaking 
+ */
+const triggerGenerate = useCallback(
+  (data) => {
     setIsTriger(data)
     if (!data) {
       Responcenavigate(false)
-
     }
-  }
-  const initialSetResult = () => {
+  },
+  [setIsTriger],
+)
+
+const initialSetResult = useCallback(
+  () => {
     setResult("")
-  }
-  const assistanceTrigger = (data) => {
+  },
+  [setResult],
+)
+
+
+
+const assistanceTrigger = useCallback(
+  (data) => {
     setAssistanc(data)
-  }
+  },
+  [setAssistanc],
+)
 
 
   useEffect(() => {
 
-    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey Alexa*****");
+    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
+
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant ) {
+    if ((result === name || result === `hi ${name}` || result ===  `hey ${name}` || result.includes(name)) && !assestant) {
       triggerGenerate(true)
       initialSetResult()
-      TextToSpeech("HI i am Alexa from Devlacus")
+      TextToSpeech(`HI i am ${name} from Devlacus`)
       assistanceTrigger(true)
     }
 
@@ -246,10 +290,7 @@ const NetworkError = () =>{
 
 
 
-  const VoiceController = (data) => {
-    setIsTriger(data)
 
-  }
 
   const Responcenavigate = (data) => {
 
@@ -270,15 +311,20 @@ const NetworkError = () =>{
     console.log('====================================');
     if (result.length > 0) {
       // VoiceController(true)
-      let FilterData = result.replace(/alexa/gi, "");
+      let regex = new RegExp(name, "gi");
+      let FilterData = result.replace(regex, "");
+      // let FilterData = result.replace(/diya/gi, "");
       if (!IsTriger && assestant) {
+        triggerGenerate(true)
+    console.log(API_KEY,'=====================axios call===============');
 
         axios({
           method: "post",
           url: "https://api.openai.com/v1/chat/completions",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer "
+            // Authorization: "Bearer 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"
+            Authorization: `Bearer ${API_KEY}`
           },
           data: {
             messages: [{ role: "user", content: FilterData }],
@@ -287,21 +333,71 @@ const NetworkError = () =>{
         })
           .then((res) => {
             console.log(res.data);
-            console.log(res.data?.choices[0].message?.content);
+            const message = res.data?.choices[0]?.message?.content;
+            console.log(message);
         
+            setIsSpeak(message?.trim());
+            increaseFullDeviceVolume();
+            TextToSpeech(message);
+            
             Responcenavigate(true);
         
-            setIsSpeak(res.data?.choices[0].message?.content.trim());
-            TextToSpeech(res.data?.choices[0].message?.content);
+            // setIsSpeak(res.data?.choices[0].message?.content.trim());
+            // TextToSpeech(res.data?.choices[0].message?.content);
+            Collection.add({
+              Qa  : result,
+              Ans : message,
+              createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+            }).then((res)=>{
+              console.log("Data added");
+            })
           })
           .catch((error) => {
             console.error(error);
-            console.log(error.message);
-           showModal()
-          });
-        
+            showModal()
+
+          });      
       }
+
+ 
+      
     }
+    // if (!IsTriger && assestant) {
+    //   triggerGenerate(true);
+    //   console.log('=====================fetch call===============');
+      
+    //   fetch("https://api.openai.com/v1/chat/completions", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "Authorization": "Bearer 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"
+    //     },
+    //     body: JSON.stringify({
+    //       messages: [{ role: "user", content: FilterData }],
+    //       model: "gpt-3.5-turbo"
+    //     })
+    //   })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log(data);
+    //     const message = data?.choices[0]?.message?.content;
+    //     console.log(message);
+      
+    //     setIsSpeak(message?.trim());
+    //     increaseFullDeviceVolume();
+    //     TextToSpeech(message);
+        
+    //     Responcenavigate(true);
+      
+    //     setIsSpeak(data?.choices[0].message?.content.trim());
+    //     TextToSpeech(data?.choices[0].message?.content);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //     showModal();
+    //   });
+    // }
+    
   }, [result])
 /**
  * The DistroySpeech function is used to distroy the text to speech and it will navigate to home screen
@@ -312,7 +408,9 @@ const NetworkError = () =>{
     Tts.stop()
     Responcenavigate(false)
     startRecording()
+    triggerGenerate(false)
     setResult("")
+
   }
 
 
@@ -337,15 +435,25 @@ const NetworkError = () =>{
 
 
 <View style={{top:40}}>
-     {visible == true ?  
+{visible == true ?  
      
      <View style={{width : responsiveWidth(50) , height:responsiveHeight(70) , backgroundColor:'#000' , elevation:3  , borderRadius:40 , borderWidth:1 , borderColor:'#DDD'}}>
      <Provider >
 
 
 <Button style={{marginTop: 30}} onPress={showModal}>
- Show
+Go back
 </Button>
+
+<View style={{justifyContent:'center' , alignSelf:'center' , top:30}}>
+<Image style={{width:120 , height: 120}} source={require('../assets/server.png')}/>
+
+<View style={{top:10}}>
+  <Text style={{color:'#fff' , fontSize:19 , fontWeight:'400'}}>Network error</Text>
+</View>
+
+</View>
+
 </Provider> 
 
 </View>
@@ -358,6 +466,9 @@ const NetworkError = () =>{
 
     
     }
+
+         
+
 
          
 
@@ -380,12 +491,13 @@ const NetworkError = () =>{
               :  <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
 
             }
+        
 
               {assestant ?
 
                 (result.length > 0 ? null : <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} >Listening....</Text>)
 
-                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Alexa"} delay={100} duration={1000} />
+                : <AnimateTriggerText text={name} duration={1500} delay={500} />
               }
 
 
