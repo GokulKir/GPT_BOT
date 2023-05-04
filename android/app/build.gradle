@@ -178,6 +178,8 @@ dependencies {
     implementation 'com.facebook.fresco:animated-gif:2.5.0'
     implementation platform('com.google.firebase:firebase-bom:31.5.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation project(':sp-react-native-mqtt')
+
     
   // For WebP support, including animated WebP
   implementation 'com.facebook.fresco:animated-webp:2.5.0'
