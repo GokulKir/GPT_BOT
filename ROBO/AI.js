@@ -137,6 +137,13 @@ export default function AI(props) {
   Voice.onSpeechError = err => setError(err.error);
   Voice.onSpeechResults = result => setRecodingResult(result.value[0]);
 
+useEffect(() => {
+  const timeDifference = new Date() - startTime;
+console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,assestant );
+    if (timeDifference > 100000 && result.length <= 0 && assestant) {
+      assistanceTrigger(false);
+    }
+},)
 
 
   const handleButtonClick = () => {
@@ -265,7 +272,9 @@ const setTextVale = useCallback(
   const assistanceTrigger = useCallback(
     data => {
       setAssistanc(data);
+      setstartTime(new Date())
     },
+
     [setAssistanc],
   );
 
@@ -293,11 +302,11 @@ const setTextVale = useCallback(
       assistanceTrigger(true);
     }
 
-    const timeDifference = new Date() - startTime;
-console.log("timeDifference > 15000 ",timeDifference > 15000 );
-    if (timeDifference > 15000 && result.length <= 0 && assestant) {
-      assistanceTrigger(true);
-    }
+//     const timeDifference = new Date() - startTime;
+// console.log("timeDifference > 15000 ",timeDifference > 15000 );
+//     if (timeDifference > 15000 && result.length <= 0 && assestant) {
+//       assistanceTrigger(true);
+//     }
   }, [result]);
 
   const Responcenavigate = data => {
@@ -350,7 +359,7 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
             TextToSpeech(message);
 
             Responcenavigate(true);
-
+            setstartTime(new Date())
             // setIsSpeak(res.data?.choices[0].message?.content.trim());
             // TextToSpeech(res.data?.choices[0].message?.content);
             Collection.add({
@@ -418,7 +427,11 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
 
   const Dimention = useWindowDimensions();
 
-  useEffect(() => {});
+  useEffect(() => {
+    console.log('====================================');
+    console.log(result);
+    console.log('====================================');
+  });
 
   return (
     <View style={styles.container}>
@@ -479,9 +492,7 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
                   width: responsiveWidth(30),
                 }}
                 imageStyle={{borderRadius: 200, flex: 1}}
-                source={{
-                  uri: 'https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif',
-                }}></ImageBackground>
+                source={ require('../assets/jasmin.gif')}></ImageBackground>
             )}
           </View> 
             <View style={{alignItems: 'center', flex: 1,}}>
@@ -499,7 +510,7 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
                         color: '#fff',
                         fontSize: responsiveFontSize(2.5),
                         fontWeight: '300',
-                      }}>
+                      }}> 
                       {result}
                     </Text>
                   ) : (
@@ -521,6 +532,7 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
 
           <TouchableOpacity
             onPress={() => startRecording()}
+            onLongPress={()=> assistanceTrigger(false)}
             style={styles.floatingButton}>
             <View style={styles.buttonContainer}>
               {result == false ? (
@@ -532,9 +544,9 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
                     justifyContent: 'center',
                   }}
                   imageStyle={{borderRadius: 200, elevation: 4}}
-                  source={{
-                    uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg',
-                  }}>
+                  source={
+                    require('../assets/gradientBlue.jpeg')
+                  }>
                   <Image
                     style={{
                       width: responsiveWidth(2),
@@ -561,9 +573,9 @@ console.log("timeDifference > 15000 ",timeDifference > 15000 );
                     borderRadius: 200,
                   }}
                   imageStyle={{borderRadius: 200, elevation: 4}}
-                  source={{
-                    uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg',
-                  }}>
+                  source={
+                    require('../assets/gradientBlue.jpeg')
+                  }>
                   <Image
                     style={{
                       width: responsiveWidth(2),
