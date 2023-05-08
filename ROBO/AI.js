@@ -16,6 +16,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
 import axios from 'axios';
 import {Modal, Portal, Button, Provider, Snackbar} from 'react-native-paper';
+import { WIFIDATA } from './customhook/wifiServer';
 import {
   BallIndicator,
   BarIndicator,
@@ -52,7 +53,7 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import moment from 'moment';
 import AnswerAI from './AnswerAI';
 import useDeviceVolume from './customhook/useDeviceVolume';
-
+import WifiManager from "react-native-wifi-reborn";
 import {
   Collection,
   KeyCollection,
@@ -84,7 +85,31 @@ export default function AI(props) {
 
   //    },[props])
 
+  useEffect(()=>{
 
+    WifiManager.connectToProtectedSSID(ssid, password, isWep).then(
+      () => {
+        console.log("Connected successfully!");
+      },
+      () => {
+        console.log("Connection failed!");
+      }
+    );
+    
+    WifiManager.getCurrentWifiSSID().then(
+      ssid => {
+        console.log("Your current connected wifi SSID is " + ssid);
+      },
+      () => {
+        console.log("Cannot get current SSID!");
+      }
+    );
+
+    WifiManager.setEnabled(true); 
+  })
+
+
+ 
   
 
   const StopRecording = () => {
