@@ -28,7 +28,7 @@ import {
   WaveIndicator,
 } from 'react-native-indicators';
 import {GiftedChat} from 'react-native-gifted-chat';
-import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
 import {
@@ -62,9 +62,11 @@ import AnimateTriggerText from './AnimateTriggerText';
 import useMQTT from './customhook/useMQTT';
 
 export default function AI(props) {
-  const [visible, setVisible] = React.useState(false);
+  const [visible, setVisible] = React.useState(true);
 
-  const showModal = () => setVisible(true);
+  const showModal = (data) =>{ setVisible(data); console.log('========jkoi============================');
+  console.log(visible);
+  console.log('====================================');}
   const hideModal = () => setVisible(false);
   const containerStyle = {backgroundColor: 'white', padding: 20};
 
@@ -350,7 +352,9 @@ const setTextVale = useCallback(
         })
           .then(res => {
             console.log(res.data);
-            const message = res.data?.choices[0]?.message?.content;
+            
+            const  paragraph= res.data?.choices[0]?.message?.content;
+            const message = paragraph.replace(/OpenAI/gi, "Devlacus");
             console.log(message);
 
             setIsSpeak(message?.trim());
@@ -372,7 +376,7 @@ const setTextVale = useCallback(
           })
           .catch(error => {
             console.error(error);
-            showModal();
+            showModal(false);
           });
       }
     }
@@ -445,7 +449,7 @@ const setTextVale = useCallback(
           }}>
           <View style={{top: 40, display: 'flex', flexDirection: 'column'}}>
             <View style={{alignItems:'center' }}>
-            {visible == true ? (
+            {!visible ? (
               <View
                 style={{
                   width: responsiveWidth(50),
@@ -456,21 +460,23 @@ const setTextVale = useCallback(
                   borderWidth: 1,
                   borderColor: '#DDD',
                 }}>
-                <Provider>
-                  <Button style={{marginTop: 30}} onPress={showModal}>
-                    Go back
-                  </Button>
-
+                <Provider>                 
+                <View style={{display:'flex',justifyContent:'flex-end',alignItems:'flex-end',marginRight:30,marginTop:20}}>
+                <Icon name="close" size={30} color="#fff" onPress={()=>showModal(true)} />
+                </View>
                   <View
                     style={{
                       justifyContent: 'center',
                       alignSelf: 'center',
-                      top: 30,
+                      // top: 30,
+                      flex:1
+                      
                     }}>
                     <Image
                       style={{width: 120, height: 120}}
                       source={require('../assets/server.png')}
                     />
+
 
                     <View style={{top: 10}}>
                       <Text
@@ -482,7 +488,11 @@ const setTextVale = useCallback(
                         Network error
                       </Text>
                     </View>
+                  
                   </View>
+                  {/* <Button style={{marginTop: 30}} onPress={showModal}>
+                    Go back
+                  </Button> */}
                 </Provider>
               </View>
             ) : (

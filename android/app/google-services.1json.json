@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "364435740301",
-    "project_id": "devbot-be1b9",
-    "storage_bucket": "devbot-be1b9.appspot.com"
+    "project_number": "489681346782",
+    "project_id": "gptbot-2537f",
+    "storage_bucket": "gptbot-2537f.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:364435740301:android:7ccd5be6a1a86c14b7b4c4",
+        "mobilesdk_app_id": "1:489681346782:android:8163082ae143e0143e624f",
         "android_client_info": {
           "package_name": "com.gpt_m"
         }
       },
       "oauth_client": [
         {
-          "client_id": "364435740301-5hdhcsusmqgj42ndnge1llgc6qhedkp4.apps.googleusercontent.com",
+          "client_id": "489681346782-qlf301evb797u1p52m2fgo74nkh3jfmk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBi69IvMqdYWMBIM4oHLREIS-TSaqV8qZE"
+          "current_key": "AIzaSyDjJWDSqOqBnypfM63F3qj2o4ipxHVpFQY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "364435740301-5hdhcsusmqgj42ndnge1llgc6qhedkp4.apps.googleusercontent.com",
+              "client_id": "489681346782-qlf301evb797u1p52m2fgo74nkh3jfmk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
