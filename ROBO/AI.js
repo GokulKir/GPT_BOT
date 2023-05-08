@@ -1,8 +1,22 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, useWindowDimensions, NativeEventEmitter, LogBox, ImageBackground, TextInput, } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  useWindowDimensions,
+  NativeEventEmitter,
+  LogBox,
+  ImageBackground,
+  TextInput,
+} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
 import Voice from '@react-native-community/voice';
-import { ScrollView } from 'react-native-gesture-handler';
+import {ScrollView} from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
+import axios from 'axios';
+import {Modal, Portal, Button, Provider, Snackbar} from 'react-native-paper';
+import { WIFIDATA } from './customhook/wifiServer';
 import {
   BallIndicator,
   BarIndicator,
@@ -14,221 +28,326 @@ import {
   UIActivityIndicator,
   WaveIndicator,
 } from 'react-native-indicators';
-import { GiftedChat } from 'react-native-gifted-chat'
-import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import {GiftedChat} from 'react-native-gifted-chat';
+import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
 import {
   responsiveHeight,
   responsiveWidth,
-  responsiveFontSize
-} from "react-native-responsive-dimensions";
-import { TextAnimationFadeIn, TextAnimationZoom, TextAnimationRain, TextAnimationSlideDown, TextAnimationSlideUp, TextAnimationSlideLeft, TextAnimationSlideRight, TextAnimationShake, TextAnimationReverse, TextAnimationDeZoom } from 'react-native-text-effects';
-import { useNavigation, useRoute } from '@react-navigation/native';
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
+import {
+  TextAnimationFadeIn,
+  TextAnimationZoom,
+  TextAnimationRain,
+  TextAnimationSlideDown,
+  TextAnimationSlideUp,
+  TextAnimationSlideLeft,
+  TextAnimationSlideRight,
+  TextAnimationShake,
+  TextAnimationReverse,
+  TextAnimationDeZoom,
+} from 'react-native-text-effects';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import moment from 'moment';
 import AnswerAI from './AnswerAI';
-
-
-
-
-
+import useDeviceVolume from './customhook/useDeviceVolume';
+import WifiManager from "react-native-wifi-reborn";
+import {
+  Collection,
+  KeyCollection,
+  TriggerWord,
+} from './customhook/BackendServer';
+import AnimateTriggerText from './AnimateTriggerText';
+import useMQTT from './customhook/useMQTT';
 
 export default function AI(props) {
+  const [visible, setVisible] = React.useState(true);
 
+  const showModal = (data) =>{ setVisible(data); console.log('========jkoi============================');
+  console.log(visible);
+  console.log('====================================');}
+  const hideModal = () => setVisible(false);
+  const containerStyle = {backgroundColor: 'white', padding: 20};
 
+  //   const route = useRoute()
+  // /
 
-//   const route = useRoute()
-// /
+  //    useEffect(()=>{
 
-//    useEffect(()=>{
+  //     if (props.route.params) {
+
+  //       const {StopT} = props.route.params
+  //        console.log("8888888",props.route.params);
+
+  //     }
+
+  //    },[props])
+
+  useEffect(()=>{
+
+    WifiManager.connectToProtectedSSID(ssid, password, isWep).then(
+      () => {
+        console.log("Connected successfully!");
+      },
+      () => {
+        console.log("Connection failed!");
+      }
+    );
     
-//     if (props.route.params) {
+    WifiManager.getCurrentWifiSSID().then(
+      ssid => {
+        console.log("Your current connected wifi SSID is " + ssid);
+      },
+      () => {
+        console.log("Cannot get current SSID!");
+      }
+    );
 
-//       const {StopT} = props.route.params
-//        console.log("8888888",props.route.params);
-      
-//     }
-
-    
-//    },[props])
-   
+    WifiManager.setEnabled(true); 
+  })
 
 
-  LogBox.ignoreLogs(['new NativeEventEmitter']);  // Ignore log notification by message
-  LogBox.ignoreAllLogs();  // Ignore all log notifications
+ 
+  
 
-  const { width, height } = useWindowDimensions()
+  const StopRecording = () => {
+    Tts.addEventListener;
+    Voice.destroy();
+    Tts.stop();
+  };
+
+  const NetworkError = () => {};
+
+  LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
+  LogBox.ignoreAllLogs(); // Ignore all log notifications
+
+  const {width, height} = useWindowDimensions();
   const [result, setResult] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [recognized, setRecognized] = useState('');
   const [message, setMessage] = useState([]);
   const [started, setStarted] = useState(false);
-  const [error, setError] = useState()
-  const [IsRecording, setIsRecording] = useState('')
-  const [IsSpeak, setIsSpeak] = useState('')
-  const [IsTriger, setIsTriger] = useState(false)
-  const [assestant, setAssistanc] = useState(false)
-  const [subTrigger, setSubtrigger] = useState(false)
-  const [inputMessage, setInputMessage] = useState("");
-  const [outputMessage, setOutputMessage] = useState("The output message");
-  const [IsOrNot, setIsOrNot] = useState(false)
-  const [StartT, setStartT] = useState(false)
-  const [WelcomSp, setWelcomSp] = useState('')
-  const [secondS, setSecondS] = useState(false)
-  const [startTime, setstartTime] = useState(new Date())
-
-  const setRecodingResult = (data) => {
-
-    setResult(data)
-  }
+  const [error, setError] = useState();
+  const [IsRecording, setIsRecording] = useState('');
+  const [IsSpeak, setIsSpeak] = useState('');
+  const [IsTriger, setIsTriger] = useState(false);
+  const [assestant, setAssistanc] = useState(false);
+  const [subTrigger, setSubtrigger] = useState(false);
+  const [inputMessage, setInputMessage] = useState('');
+  const [outputMessage, setOutputMessage] = useState('The output message');
+  const [IsOrNot, setIsOrNot] = useState(false);
+  const [StartT, setStartT] = useState(false);
+  const [WelcomSp, setWelcomSp] = useState('');
+  const [secondS, setSecondS] = useState(false);
+  const [API_KEY, SET_API_KEY] = useState();
+  const [MQTT, setMQTT] = useState("Trigger Not Detected")
+  const [text, setText] = useState('connected');
+  const [client, publishMessage] = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467', '/data', text);
 
 
-  Voice.onSpeechEnd = () => setIsRecording(false)
-  Voice.onSpeechError = err => setError(err.error)
-  Voice.onSpeechResults = (result) => setRecodingResult(result.value[0])
+  // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
+  const [startTime, setstartTime] = useState(new Date());
+  const {volume, increaseFullDeviceVolume, decreaseFullDeviceVolume} =
+    useDeviceVolume();
+  const [name, setName] = useState('Sonic');
+
+  // console.log(mqttClient,"mqttClient");
+
+  const setRecodingResult = data => {
+    setResult(data);
+  };
+  
+
+  Voice.onSpeechEnd = () => setIsRecording(false);
+  Voice.onSpeechError = err => setError(err.error);
+  Voice.onSpeechResults = result => setRecodingResult(result.value[0]);
+
+useEffect(() => {
+  const timeDifference = new Date() - startTime;
+console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,assestant );
+    if (timeDifference > 100000 && result.length <= 0 && assestant) {
+      assistanceTrigger(false);
+    }
+},)
 
 
-  // const handleTextInputMessage = (text) => {
-  //   console.log(text);
-  //   setInputMessage(text);
-  // };
+  const handleButtonClick = () => {
+    publishMessage(text);
+  };
 
-
-  // useEffect(()=>{
-  //   setInterval(() => {
-  //     setStartT(true)
-
-  //   }, 2500);
-  // })
-
-
+  useEffect(() => {
+    handleButtonClick()
+  }, [text])
+  
   // Start recording //
 
   const startRecording = async () => {
+    decreaseFullDeviceVolume();
     // Voice.onSpeechRecognized((res)=>console.log(res))
-
+    console.log('====================================');
+    console.log('Recoding voice', IsTriger);
+    console.log('====================================');
     await Voice.start('en-US');
-
-
-
   };
 
+  useEffect(() => {
+   
 
+    TriggerWord.get().then(data =>
+      data.forEach(doc => {
+        console.log(doc.id, ' => ', doc.data().triggerName);
+        let triggerName = doc.data().triggerName;
+        setName(triggerName);
+      }),
+    );
+
+    let key = '';
+    KeyCollection.get().then(data =>
+      data.forEach(doc => {
+        console.log(doc.id, ' => ', doc.data()?.DevBotKey);
+        key = doc.data()?.DevBotKey;
+        SET_API_KEY(key);
+      }),
+    );
+  }, []);
 
   // Start recording //
 
-
   //Stop recording //
-
 
   const stopRecording = async () => {
-    // console.log("stpo recoding*****");
-    setStarted(false)
-    setLoading(false)
-    setIsOrNot(true)
-    await Voice.stop()
+    console.log('stpo recoding*****');
+    setStarted(false);
+    setLoading(false);
+    setIsOrNot(true);
+    await Voice.stop();
+  };
 
-  }
-
+  /**
+   * Gokul code
+   */
   function stop() {
     Tts.stop();
+    Voice.destroy();
+    setSecondS(false);
   }
 
+const setTextVale = useCallback(
+  (data) =>{
+    setText(data)
+  },
+  [setText],
+)
+
+
+
+
   //Stop recording //
-
-
 
   // jestin xavier
   useEffect(() => {
     if (!IsTriger) {
-      startRecording()
+     
+      startRecording();
+    } else {
+      stopRecording();
+     
     }
-    else {
-      stopRecording()
-    }
-  }, [startRecording, IsTriger])
+  }, [startRecording, IsTriger]);
 
-
-
-
-  const TextToSpeech = (data) => {
+  const TextToSpeech = data => {
+    increaseFullDeviceVolume();
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
 
     Tts.addEventListener('tts-finish', () => {
-      triggerGenerate(false)
-      console.log('Speech finished')
+      console.log('Speech finished');
+      setTextVale("Speech Ented");
+      triggerGenerate(false);
     });
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
-        KEY_PARAM_VOLUME: 0.5,
+        KEY_PARAM_VOLUME: 1,
         KEY_PARAM_STREAM: 'STREAM_MUSIC',
       },
-
-    }
-
-
-    )
+    });
     //  }
-  }
+  };
 
+  /**
+   *
+   * @param {boolean} boolean
+   * this function is used to controll the trigger of the mic when it start to speaking
+   */
+  const triggerGenerate = useCallback(
+    data => {
+      setIsTriger(data);
+      if (!data) {
+        Responcenavigate(false);
+      }
+    },
+    [setIsTriger],
+  );
 
+  const initialSetResult = useCallback(() => {
+    setResult('');
+  }, [setResult]);
 
-  const triggerGenerate = (data) => {
-    setIsTriger(data)
-    if (!data) {
-      Responcenavigate(false)
+  const assistanceTrigger = useCallback(
+    data => {
+      setAssistanc(data);
+      setstartTime(new Date())
+    },
 
-    }
-  }
-  const initialSetResult = () => {
-    setResult("")
-  }
-  const assistanceTrigger = (data) => {
-    setAssistanc(data)
-  }
-
+    [setAssistanc],
+  );
 
   useEffect(() => {
+    console.log(
+      result,
+      result === 'Alexa' || result === 'hi Alexa' || result === 'hey Alexa',
+      '******hey dana*****',
+    );
 
-    console.log(result, result === "Alexa" || result === "hi Alexa" || result === "hey Alexa", "******hey dana*****");
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
-    if ((result === "Alexa" || result === "hi Alexa" || result === "hey Alexa" || result.includes("Alexa")) && !assestant) {
-      triggerGenerate(true)
-      initialSetResult()
-      TextToSpeech("HI i am Alexa from Devlacus")
-      assistanceTrigger(true)
+    if (
+      (result === name ||
+        result === `hi ${name}` ||
+        result === `hey ${name}` ||
+        result.includes(name)) &&
+      !assestant
+    ) {
+      setTextVale("Trigger Word Dectected");
+      triggerGenerate(true);
+      initialSetResult();
+     
+      TextToSpeech(`HI i am ${name} from Devlacus`);
+      assistanceTrigger(true);
     }
 
-    const timeDifference = new Date() - startTime;
+//     const timeDifference = new Date() - startTime;
+// console.log("timeDifference > 15000 ",timeDifference > 15000 );
+//     if (timeDifference > 15000 && result.length <= 0 && assestant) {
+//       assistanceTrigger(true);
+//     }
+  }, [result]);
 
-    if (timeDifference > 15000 && result.length < 0 && assestant) {
-      assistanceTrigger(true)
+  const Responcenavigate = data => {
+    if(secondS){
+    setTextVale("Speech Ented");
     }
-
-
-  }, [result])
-
-
-
-  const VoiceController = (data) => {
-    setIsTriger(data)
-
-  }
-
-  const Responcenavigate = (data) => {
-
-    setSecondS(data)
-
-  }
+    setSecondS(data);
+  };
 
   useEffect(() => {
-    console.log(secondS)
-  }, [secondS])
-
-
-
+    if (secondS) {
+      setRecodingResult('');
+    }
+  }, [secondS]);
 
   useEffect(() => {
     console.log('====================================');
@@ -236,268 +355,285 @@ export default function AI(props) {
     console.log('====================================');
     if (result.length > 0) {
       // VoiceController(true)
-      let FilterData = result.replace(/alexa/gi, "");
+     
+      let regex = new RegExp(name, 'gi');
+      let FilterData = result.replace(regex, '');
+      // let FilterData = result.replace(/diya/gi, "");
       if (!IsTriger && assestant) {
-        fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
+        triggerGenerate(true);
+        console.log(API_KEY, '=====================axios call===============');
+       
+        axios({
+          method: 'post',
+          url: 'https://api.openai.com/v1/chat/completions',
           headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Bearer ",
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${API_KEY}`,
           },
-          body: JSON.stringify({
-            // "prompt": inputMessage,
-            messages: [{ role: "user", content: FilterData }],
-            // "model": "text-davinci-003",
-            model: "gpt-3.5-turbo",
-          }),
+          data: {
+            messages: [{role: 'user', content: FilterData}],
+            model: 'gpt-3.5-turbo',
+          },
         })
-          .then((res) => res.json())
-          .then((data) => {
-            console.log(data);
-            console.log(data?.choices[0].message?.content);
+          .then(res => {
+            console.log(res.data);
+            
+            const  paragraph= res.data?.choices[0]?.message?.content;
+            const message = paragraph.replace(/OpenAI/gi, "Devlacus");
+            console.log(message);
 
-            //  navigation.navigate("AnswerAI" , {data : data?.choices[0].message?.content , IsTriger})
-          
-            Responcenavigate(true)
+            setIsSpeak(message?.trim());
+            increaseFullDeviceVolume();
+            setTextVale("Speech Started");
+            TextToSpeech(message);
 
-            setIsSpeak(data?.choices[0].message?.content)
-            TextToSpeech(data?.choices[0].message?.content)
-
-          
-
-            // triggerGenerate(true)
-            // Tts.speak(data?.choices[0].message?.content, {
-            //   androidParams: {
-            //     KEY_PARAM_PAN: -1,
-            //     KEY_PARAM_VOLUME: 0.5,
-            //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-            //   },
-            // });
-
-
-
-
+            Responcenavigate(true);
+            setstartTime(new Date())
+            // setIsSpeak(res.data?.choices[0].message?.content.trim());
+            // TextToSpeech(res.data?.choices[0].message?.content);
+            Collection.add({
+              Qa: result,
+              Ans: message,
+              createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+            }).then(res => {
+              console.log('Data added');
+            });
           })
-        // setTimeout(function (){
-        //   VoiceController(false)
-        // }
-        //   , 5000);
-
+          .catch(error => {
+            console.error(error);
+            showModal(false);
+          });
       }
     }
-  }, [result])
+    // if (!IsTriger && assestant) {
+    //   triggerGenerate(true);
+    //   console.log('=====================fetch call===============');
 
-  // useEffect(() => {
-  //   console.log("isTrigger = ",IsTriger," trigger*****");
-  //   if(voiceJSusTrigr){
-  //   fetch("https://api.openai.com/v1/chat/completions", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization:
-  //         "Bearer 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",
-  //     },
-  //     body: JSON.stringify({
-  //       // "prompt": inputMessage,
-  //       messages: [{ role: "user", content: result }],
-  //       // "model": "text-davinci-003",
-  //       model: "gpt-3.5-turbo",
-  //     }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       console.log(data?.choices[0].message?.content);
-  //       setIsSpeak(data?.choices[0].message?.content)
-  //       TextToSpeech(data?.choices[0].message?.content)
+    //   fetch("https://api.openai.com/v1/chat/completions", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "Authorization": "Bearer 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"
+    //     },
+    //     body: JSON.stringify({
+    //       messages: [{ role: "user", content: FilterData }],
+    //       model: "gpt-3.5-turbo"
+    //     })
+    //   })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     console.log(data);
+    //     const message = data?.choices[0]?.message?.content;
+    //     console.log(message);
 
-  //       // Tts.speak(data?.choices[0].message?.content, {
-  //       //   androidParams: {
-  //       //     KEY_PARAM_PAN: -1,
-  //       //     KEY_PARAM_VOLUME: 0.5,
-  //       //     KEY_PARAM_STREAM: 'STREAM_MUSIC',
-  //       //   },
-  //       // });
+    //     setIsSpeak(message?.trim());
+    //     increaseFullDeviceVolume();
+    //     TextToSpeech(message);
 
+    //     Responcenavigate(true);
 
-
-  //     })  
-  //     // setTimeout(function (){
-  //     //   VoiceController(false)
-  //     // }
-  //     //   , 5000);
-
-  //   }
-
-  // }, [IsTriger])
-
-
-
-
-
-
-
-  // const onSpeechResults = async (e) => {
-  //   setRecognized(e.value[0]);
-  //   console.log(e.value[0]);
-  //   if (recognized === 'start conversation') {
-  //     const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-  //       prompt: 'start conversation',
-  //       max_tokens: 100,
-  //       n: 1,
-  //       stop: '.',
-  //       temperature: 0.5,
-  //     }, {
-  //       headers: {
-  //         'Authorization': 'Bearer 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',
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     setMessage(response.data.choices[0].text);
-  //   } else if (recognized === 'send message') {
-  //     const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-  //       prompt: 'send message',
-  //       max_tokens: 100,
-  //       n: 1,
-  //       stop: '.',
-  //       temperature: 0.5,
-  //     }, {
-  //       headers: {
-  //         'Authorization': 'Bearer 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',
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     setMessage(response.data.choices[0].text);
-  //   } else if (recognized === 'end conversation') {
-  //     setMessage('Goodbye!');
-  //   }
-  // };
-
-  // Voice.onSpeechResults = onSpeechResults;
-
-
-
-  // useEffect(() => {
-  //   console.log(result);
-  // })
-
-
+    //     setIsSpeak(data?.choices[0].message?.content.trim());
+    //     TextToSpeech(data?.choices[0].message?.content);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //     showModal();
+    //   });
+    // }
+  }, [result]);
+  /**
+   * The DistroySpeech function is used to distroy the text to speech and it will navigate to home screen
+   */
+  const DistroySpeech = () => {
+    Tts.addEventListener;
+    // Voice.destroy()
+    Tts.stop();
+    Responcenavigate(false);
+    startRecording();
+    triggerGenerate(false);
+    setResult('');
+  };
 
   const Dimention = useWindowDimensions();
 
-
-
-
   useEffect(() => {
-
-  })
-
+    console.log('====================================');
+    console.log(result);
+    console.log('====================================');
+  });
 
   return (
     <View style={styles.container}>
+      {!secondS ? (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: '#000',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <View style={{top: 40, display: 'flex', flexDirection: 'column'}}>
+            <View style={{alignItems:'center' }}>
+            {!visible ? (
+              <View
+                style={{
+                  width: responsiveWidth(50),
+                  height: responsiveHeight(70),
+                  backgroundColor: '#000',
+                  elevation: 3,
+                  borderRadius: 40,
+                  borderWidth: 1,
+                  borderColor: '#DDD',
+                }}>
+                <Provider>                 
+                <View style={{display:'flex',justifyContent:'flex-end',alignItems:'flex-end',marginRight:30,marginTop:20}}>
+                <Icon name="close" size={30} color="#fff" onPress={()=>showModal(true)} />
+                </View>
+                  <View
+                    style={{
+                      justifyContent: 'center',
+                      alignSelf: 'center',
+                      // top: 30,
+                      flex:1
+                      
+                    }}>
+                    <Image
+                      style={{width: 120, height: 120}}
+                      source={require('../assets/server.png')}
+                    />
 
 
-
-
-     {!secondS? <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'space-between' }}>
-
-
-
-
-        <View style={{ top: 40, alignItems: 'center' }}>
-
-
-
-          <ImageBackground style={{ height: responsiveWidth(30), width: responsiveWidth(30) }} imageStyle={{ borderRadius: 200, flex: 1 }} source={{ uri: "https://i.pinimg.com/originals/fd/9f/6d/fd9f6dfa7872b4fa35a44d218cc77823.gif" }}>
-
-          </ImageBackground>
-
-
-
-          <View style={{ alignItems: 'center', flex: 1 }}>
-
-            {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
+                    <View style={{top: 10}}>
+                      <Text
+                        style={{
+                          color: '#fff',
+                          fontSize: 19,
+                          fontWeight: '400',
+                        }}>
+                        Network error
+                      </Text>
+                    </View>
+                  
+                  </View>
+                  {/* <Button style={{marginTop: 30}} onPress={showModal}>
+                    Go back
+                  </Button> */}
+                </Provider>
+              </View>
+            ) : (
+              <ImageBackground
+                style={{
+                  height: responsiveWidth(30),
+                  width: responsiveWidth(30),
+                }}
+                imageStyle={{borderRadius: 200, flex: 1}}
+                source={ require('../assets/jasmin.gif')}></ImageBackground>
+            )}
+          </View> 
+            <View style={{alignItems: 'center', flex: 1,}}>
+              {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
 
               <Text style={{ color: '#fff', fontSize: 25, fontWeight: '200' }}>{result}</Text>
 
             </View> */}
 
-
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }}>{result}</Text>
-
-              {assestant ?
-
-                (result.length > 0 ? null : <Text style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} >Listening....</Text>)
-
-                : <TextAnimationFadeIn style={{ color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }} value={"Call Me Alexa"} delay={100} duration={1000} />
-              }
-
-
-
+              <View style={{alignItems: 'center'}}>
+                {assestant ? (
+                  result.length > 0 ? (
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: responsiveFontSize(2.5),
+                        fontWeight: '300',
+                      }}> 
+                      {result}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontSize: responsiveFontSize(2.5),
+                        fontWeight: '300',
+                      }}>
+                      Listening....
+                    </Text>
+                  )
+                ) : (
+                  <AnimateTriggerText text={name} duration={1500} delay={500} />
+                )}
+              </View>
             </View>
-
-
           </View>
 
+          <TouchableOpacity
+            onPress={() => startRecording()}
+            onLongPress={()=> assistanceTrigger(false)}
+            style={styles.floatingButton}>
+            <View style={styles.buttonContainer}>
+              {result == false ? (
+                <ImageBackground
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  source={
+                    require('../assets/gradientBlue.jpeg')
+                  }>
+                  <Image
+                    style={{
+                      width: responsiveWidth(2),
+                      height: responsiveWidth(2),
+                    }}
+                    source={require('../assets/Mic.png')}
+                  />
+                </ImageBackground>
+              ) : (
+                // <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
 
+                //   <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
+
+                //   </ImageBackground>
+                // </TouchableOpacity>
+                <ImageBackground
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: '#19ecf7',
+                    borderRadius: 200,
+                  }}
+                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  source={
+                    require('../assets/gradientBlue.jpeg')
+                  }>
+                  <Image
+                    style={{
+                      width: responsiveWidth(2),
+                      height: responsiveWidth(2),
+                    }}
+                    source={require('../assets/Mic.png')}
+                  />
+                </ImageBackground>
+              )}
+            </View>
+          </TouchableOpacity>
         </View>
-
-
-
-
-
-        <TouchableOpacity onPress={() => startRecording()} style={styles.floatingButton}>
-          <View style={styles.buttonContainer}>
-            {result == false ?
-
-
-
-              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
-
-                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
-
-              </ImageBackground>
-
-
-
-              :
-
-              // <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
-
-              //   <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
-
-
-              //   </ImageBackground>
-              // </TouchableOpacity>
-              <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: "#19ecf7", borderRadius: 200 }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={{ uri: 'https://img.freepik.com/free-photo/gradient-blue-abstract-background-smooth-dark-blue-with-black-vignette-studio_1258-66994.jpg' }}>
-
-                <Image style={{ width: responsiveWidth(2), height: responsiveWidth(2) }} source={require('../assets/Mic.png')} />
-
-              </ImageBackground>
-            }
-          </View>
-        </TouchableOpacity>
-
-      </View>
-    :
-    <AnswerAI Data = {IsSpeak} />  
-    
-    }
-
-
-
-
+      ) : (
+        <AnswerAI Data={IsSpeak} stop={DistroySpeech} />
+      )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-
   },
 
   floatingButton: {
@@ -512,10 +648,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 5, // for android shadow effect
     shadowColor: '#000', // for ios shadow effect
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.5,
     shadowRadius: 2,
-    borderRadius: 200
+    borderRadius: 200,
   },
   buttonContainer: {
     width: '100%',
@@ -529,6 +665,4 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
   },
-
-
-})
+});

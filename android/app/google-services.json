@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "364435740301",
+    "project_id": "devbot-be1b9",
+    "storage_bucket": "devbot-be1b9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364435740301:android:7ccd5be6a1a86c14b7b4c4",
+        "android_client_info": {
+          "package_name": "com.gpt_m"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364435740301-5hdhcsusmqgj42ndnge1llgc6qhedkp4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBi69IvMqdYWMBIM4oHLREIS-TSaqV8qZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364435740301-5hdhcsusmqgj42ndnge1llgc6qhedkp4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
