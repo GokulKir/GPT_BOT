@@ -28,6 +28,11 @@ const TextAutoScroll = ({ text, delay = 1500 }) => {
     }
     setChunks(splitText);
   }, [text]);
+
+  const myArray = ["apple", "banana", "cherry", "date"];
+
+
+
   
 
   useEffect(() => {

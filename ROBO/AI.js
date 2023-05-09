@@ -11,6 +11,7 @@ import {
   TextInput,
 } from 'react-native';
 import React, {useState, useEffect, useCallback} from 'react';
+import { PermissionsAndroid } from 'react-native';
 import Voice from '@react-native-community/voice';
 import {ScrollView} from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
@@ -85,28 +86,6 @@ export default function AI(props) {
 
   //    },[props])
 
-  useEffect(()=>{
-
-    WifiManager.connectToProtectedSSID(ssid, password, isWep).then(
-      () => {
-        console.log("Connected successfully!");
-      },
-      () => {
-        console.log("Connection failed!");
-      }
-    );
-    
-    WifiManager.getCurrentWifiSSID().then(
-      ssid => {
-        console.log("Your current connected wifi SSID is " + ssid);
-      },
-      () => {
-        console.log("Cannot get current SSID!");
-      }
-    );
-
-    WifiManager.setEnabled(true); 
-  })
 
 
  
@@ -145,7 +124,8 @@ export default function AI(props) {
   const [MQTT, setMQTT] = useState("Trigger Not Detected")
   const [text, setText] = useState('connected');
   const [client, publishMessage] = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467', '/data', text);
-
+const [wifiData, setwifiData] = useState('')
+const [speechEndTrigger,setSpeechEndTrigger ] = useState(false)
 
   // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
   const [startTime, setstartTime] = useState(new Date());
@@ -154,6 +134,10 @@ export default function AI(props) {
   const [name, setName] = useState('Sonic');
 
   // console.log(mqttClient,"mqttClient");
+
+  const speechEndTriggerController = (data)=>{
+    setSpeechEndTrigger(data)
+  }
 
   const setRecodingResult = data => {
     setResult(data);
@@ -166,7 +150,6 @@ export default function AI(props) {
 
 useEffect(() => {
   const timeDifference = new Date() - startTime;
-console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,assestant );
     if (timeDifference > 100000 && result.length <= 0 && assestant) {
       assistanceTrigger(false);
     }
@@ -186,9 +169,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
   const startRecording = async () => {
     decreaseFullDeviceVolume();
     // Voice.onSpeechRecognized((res)=>console.log(res))
-    console.log('====================================');
-    console.log('Recoding voice', IsTriger);
-    console.log('====================================');
     await Voice.start('en-US');
   };
 
@@ -197,7 +177,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
 
     TriggerWord.get().then(data =>
       data.forEach(doc => {
-        console.log(doc.id, ' => ', doc.data().triggerName);
         let triggerName = doc.data().triggerName;
         setName(triggerName);
       }),
@@ -206,7 +185,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
     let key = '';
     KeyCollection.get().then(data =>
       data.forEach(doc => {
-        console.log(doc.id, ' => ', doc.data()?.DevBotKey);
         key = doc.data()?.DevBotKey;
         SET_API_KEY(key);
       }),
@@ -218,7 +196,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
   //Stop recording //
 
   const stopRecording = async () => {
-    console.log('stpo recoding*****');
     setStarted(false);
     setLoading(false);
     setIsOrNot(true);
@@ -236,10 +213,78 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
 
 const setTextVale = useCallback(
   (data) =>{
-    setText(data)
+    setText(pre=>{if(pre !== data){
+      return data
+    }
+    return ""
+  })
   },
   [setText],
 )
+
+
+
+
+const granted =  PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'Location permission is required for WiFi connections',
+        message:
+          'This app needs location permission as this is required  ' +
+          'to scan for wifi networks.',
+        buttonNegative: 'DENY',
+        buttonPositive: 'ALLOW',
+      },
+);
+if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+    // You can now use react-native-wifi-reborn
+} else {
+    // Permission denied
+}
+
+
+const wifi = async () => {
+  try {
+    const data = await WifiManager.connectToProtectedSSID(
+      ssid,
+      password,
+      isWep,
+    );
+    console.log('Connected successfully!', {data});
+    // setConneted({connected: true, ssid});
+  } catch (error) {
+    // setConneted({connected: false, error: error.message});
+    console.log('Connection failed!', {error});
+  }
+
+  try {
+    const ssid = await WifiManager.getCurrentWifiSSID();
+    const BSSID = await WifiManager.getBSSID();
+    const Ip = await WifiManager.getIP()
+    const SignalStrength = await WifiManager.getCurrentSignalStrength()
+    
+
+    
+    
+  const wifiDetails = {wifiDetails:{ssid,BSSID,Ip,SignalStrength}}
+  // setTextVale(wifiDetails)
+  let wifidata = JSON.stringify(wifiDetails) 
+  setwifiData(wifidata)
+  
+    // setSsid(ssid);
+    console.log('Your current connected wifi SSID is ' + JSON.stringify( wifiDetails));
+  } catch (error) {
+    // setSsid('Cannot get current SSID!' + error.message);
+    console.log('Cannot get current SSID!', {error});
+  }
+};
+
+useEffect(()=>{
+  wifi()
+  
+},[])
+
+
 
 
 
@@ -257,16 +302,24 @@ const setTextVale = useCallback(
     }
   }, [startRecording, IsTriger]);
 
-  const TextToSpeech = data => {
+  const TextToSpeech = (data,status=true) => {
     increaseFullDeviceVolume();
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
 
     Tts.addEventListener('tts-finish', () => {
+
       console.log('Speech finished');
-      setTextVale("Speech Ented");
+      if(status){
+      if(!speechEndTrigger){
+      setTextVale("Speech End");
+      }
+      speechEndTriggerController(true)
       triggerGenerate(false);
+      }
     });
+
+    
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
@@ -306,11 +359,7 @@ const setTextVale = useCallback(
   );
 
   useEffect(() => {
-    console.log(
-      result,
-      result === 'Alexa' || result === 'hi Alexa' || result === 'hey Alexa',
-      '******hey dana*****',
-    );
+
 
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
@@ -329,16 +378,11 @@ const setTextVale = useCallback(
       assistanceTrigger(true);
     }
 
-//     const timeDifference = new Date() - startTime;
-// console.log("timeDifference > 15000 ",timeDifference > 15000 );
-//     if (timeDifference > 15000 && result.length <= 0 && assestant) {
-//       assistanceTrigger(true);
-//     }
   }, [result]);
 
   const Responcenavigate = data => {
     if(secondS){
-    setTextVale("Speech Ented");
+    setTextVale("Speech End");
     }
     setSecondS(data);
   };
@@ -350,19 +394,37 @@ const setTextVale = useCallback(
   }, [secondS]);
 
   useEffect(() => {
-    console.log('====================================');
-    console.log(result);
-    console.log('====================================');
+    setTextVale(wifiData)
+  }, [wifiData])
+  
+useEffect(() => {
+  if(result.length <=0 && !IsTriger && assestant && !secondS){
+    setTextVale("Listening Start");
+  }
+}, [assestant,IsTriger,secondS])
+
+  useEffect( () => {
     if (result.length > 0) {
       // VoiceController(true)
+
+      const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
+      // Generate a random index between 0 and the length of the array minus 1
+      const randomIndex = Math.floor(Math.random() * myArray.length);
+      // Get the value at the random index
+      const randomValue = myArray[randomIndex];
+
+      console.log('Prints a random value from the array',randomValue); // Prints a random value from the array
+      speechEndTriggerController(false)
      
       let regex = new RegExp(name, 'gi');
       let FilterData = result.replace(regex, '');
       // let FilterData = result.replace(/diya/gi, "");
       if (!IsTriger && assestant) {
         triggerGenerate(true);
-        console.log(API_KEY, '=====================axios call===============');
-       
+        // console.log(API_KEY, '=====================axios call===============');
+        setTextVale("Listening End");
+      //  TextToSpeech(randomValue)
+
         axios({
           method: 'post',
           url: 'https://api.openai.com/v1/chat/completions',
@@ -384,7 +446,7 @@ const setTextVale = useCallback(
 
             setIsSpeak(message?.trim());
             increaseFullDeviceVolume();
-            setTextVale("Speech Started");
+            setTextVale("Speech Start");
             TextToSpeech(message);
 
             Responcenavigate(true);
@@ -404,42 +466,9 @@ const setTextVale = useCallback(
             showModal(false);
           });
       }
+    
     }
-    // if (!IsTriger && assestant) {
-    //   triggerGenerate(true);
-    //   console.log('=====================fetch call===============');
 
-    //   fetch("https://api.openai.com/v1/chat/completions", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "Authorization": "Bearer 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"
-    //     },
-    //     body: JSON.stringify({
-    //       messages: [{ role: "user", content: FilterData }],
-    //       model: "gpt-3.5-turbo"
-    //     })
-    //   })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log(data);
-    //     const message = data?.choices[0]?.message?.content;
-    //     console.log(message);
-
-    //     setIsSpeak(message?.trim());
-    //     increaseFullDeviceVolume();
-    //     TextToSpeech(message);
-
-    //     Responcenavigate(true);
-
-    //     setIsSpeak(data?.choices[0].message?.content.trim());
-    //     TextToSpeech(data?.choices[0].message?.content);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     showModal();
-    //   });
-    // }
   }, [result]);
   /**
    * The DistroySpeech function is used to distroy the text to speech and it will navigate to home screen
@@ -456,11 +485,11 @@ const setTextVale = useCallback(
 
   const Dimention = useWindowDimensions();
 
-  useEffect(() => {
-    console.log('====================================');
-    console.log(result);
-    console.log('====================================');
-  });
+  // useEffect(() => {
+  //   console.log('====================================');
+  //   console.log(result);
+  //   console.log('====================================');
+  // });
 
   return (
     <View style={styles.container}>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Text, Animated } from 'react-native';
 import {
-  responsiveFontSize
+  responsiveFontSize, responsiveHeight
 } from "react-native-responsive-dimensions";
 
-const AnimateTriggerText = ({ text, duration = 1000, delay = 0 }) => {
+const AnimateTriggerText = ({ text, duration = 100, delay = 200 }) => {
   const [animatedValue] = useState(new Animated.Value(0));
   const [textArray, setTextArray] = useState([]);
 
