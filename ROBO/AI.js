@@ -33,6 +33,8 @@ import { GiftedChat } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
+import Icon3 from 'react-native-vector-icons/dist/Feather';
+
 import {
   responsiveHeight,
   responsiveWidth,
@@ -61,8 +63,11 @@ import {
 } from './customhook/BackendServer';
 import AnimateTriggerText from './AnimateTriggerText';
 import useMQTT from './customhook/useMQTT';
+import { changeVolume } from 'react-native-volume-control';
+import Slider from "react-native-slider";
 
 export default function AI(props) {
+  const navigation = useNavigation() ;
   const [visible, setVisible] = React.useState(true);
 
   const showModal = (data) => {
@@ -130,15 +135,16 @@ export default function AI(props) {
 
   // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
   const [startTime, setstartTime] = useState(new Date());
-  const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
-    useDeviceVolume();
+  // const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
+  //   useDeviceVolume();
   const [name, setName] = useState('Sonic');
   const [Gpname , setGpname] = useState("What is your name") ;
-
+  const [volume, setVolume] = useState(0.5);
 
 
 
   //Request Permission //
+
 
   async function requestBluetoothPermission() {
     try {
@@ -163,9 +169,11 @@ export default function AI(props) {
     }
   }
 
-  useEffect(()=> {
-  requestBluetoothPermission()
-  } , [requestBluetoothPermission])
+  
+  useEffect(() => {
+    requestBluetoothPermission();
+  }, []);
+
   
 
     //Request Permission //
@@ -477,7 +485,20 @@ export default function AI(props) {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
+ 
+         <View style={{alignSelf:'flex-start'  , left:20 , top:15}}>                     
+        <TouchableOpacity onPress={()=> navigation.navigate("Settings")} style={{width : responsiveWidth(5) , height : responsiveWidth(5) , backgroundColor:'#53065c' ,  borderRadius : 200 , alignItems:'center' , justifyContent:'center' }}>
+
+          <Icon3 name="settings" color="#fff" size={25}/>
+
+        </TouchableOpacity>
+
+      </View>
+
+  
+           
+
+          <View style={{ top: 40, display: 'flex', flexDirection: 'column' , }}>
             <View style={{ alignItems: 'center' }}>
               {!visible ? (
                 <View
