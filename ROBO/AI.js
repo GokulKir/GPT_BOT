@@ -54,7 +54,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import moment from 'moment';
 import AnswerAI from './AnswerAI';
 import useDeviceVolume from './customhook/useDeviceVolume';
-import WifiManager from "react-native-wifi-reborn";
 import {
   Collection,
   KeyCollection,
@@ -134,6 +133,43 @@ export default function AI(props) {
   const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
     useDeviceVolume();
   const [name, setName] = useState('Sonic');
+  const [Gpname , setGpname] = useState("What is your name") ;
+
+
+
+
+  //Request Permission //
+
+  async function requestBluetoothPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: 'Bluetooth Permission',
+          message:
+            'This app needs access to your location to discover nearby Bluetooth devices.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Bluetooth permission granted');
+      } else {
+        console.log('Bluetooth permission denied');
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
+  useEffect(()=> {
+  requestBluetoothPermission()
+  } , [requestBluetoothPermission])
+  
+
+    //Request Permission //
+
 
   // console.log(mqttClient,"mqttClient");
 
@@ -228,70 +264,6 @@ export default function AI(props) {
 
 
 
-  const granted = PermissionsAndroid.request(
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    {
-      title: 'Location permission is required for WiFi connections',
-      message:
-        'This app needs location permission as this is required  ' +
-        'to scan for wifi networks.',
-      buttonNegative: 'DENY',
-      buttonPositive: 'ALLOW',
-    },
-  );
-  if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    // You can now use react-native-wifi-reborn
-  } else {
-    // Permission denied
-  }
-
-
-  const wifi = async () => {
-    try {
-      const data = await WifiManager.connectToProtectedSSID(
-        ssid,
-        password,
-        isWep,
-      );
-      console.log('Connected successfully!', { data });
-      // setConneted({connected: true, ssid});
-    } catch (error) {
-      // setConneted({connected: false, error: error.message});
-      console.log('Connection failed!', { error });
-    }
-
-    try {
-      const ssid = await WifiManager.getCurrentWifiSSID();
-      const BSSID = await WifiManager.getBSSID();
-      const Ip = await WifiManager.getIP()
-      const SignalStrength = await WifiManager.getCurrentSignalStrength()
-
-
-
-
-      const wifiDetails = { wifiDetails: { ssid, BSSID, Ip, SignalStrength } }
-      // setTextVale(wifiDetails)
-      let wifidata = JSON.stringify(wifiDetails)
-      setwifiData(wifidata)
-
-      // setSsid(ssid);
-      console.log('Your current connected wifi SSID is ' + JSON.stringify(wifiDetails));
-    } catch (error) {
-      // setSsid('Cannot get current SSID!' + error.message);
-      console.log('Cannot get current SSID!', { error });
-    }
-  };
-
-  useEffect(() => {
-    wifi()
-
-  }, [])
-
-
-
-
-
-
   //Stop recording //
 
   // jestin xavier
@@ -371,6 +343,7 @@ export default function AI(props) {
         result === `hi ${name}` ||
         result === `hey ${name}` ||
         result.includes(name)) &&
+        result.includes(Gpname) &&
       !assestant
     ) {
       setTextVale("Trigger Word Dectected");
