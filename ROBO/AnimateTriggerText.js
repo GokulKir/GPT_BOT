@@ -22,15 +22,15 @@ const AnimateTriggerText = ({ text, duration = 100, delay = 200 }) => {
     }).start();
   }, [animatedValue, duration, delay]);
 
-  
+
 
   return (
-    <Animated.View style={{ opacity: animatedValue,display:'flex',flexDirection:'row' }}>
+    <Animated.View style={{ opacity: animatedValue, display: 'flex', flexDirection: 'row' }}>
 
       {textArray.map((letter, index) => (
         <Animated.Text
           key={index}
-          style={[{ opacity: animatedValue },{color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300'}]}
+          style={[{ opacity: animatedValue }, { color: '#fff', fontSize: responsiveFontSize(2.5), fontWeight: '300' }]}
         >
           {letter}
         </Animated.Text>

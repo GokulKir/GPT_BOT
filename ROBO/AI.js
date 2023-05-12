@@ -10,13 +10,13 @@ import {
   ImageBackground,
   TextInput,
 } from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PermissionsAndroid } from 'react-native';
 import Voice from '@react-native-community/voice';
-import {ScrollView} from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
 import axios from 'axios';
-import {Modal, Portal, Button, Provider, Snackbar} from 'react-native-paper';
+import { Modal, Portal, Button, Provider, Snackbar } from 'react-native-paper';
 import { WIFIDATA } from './customhook/wifiServer';
 import {
   BallIndicator,
@@ -29,7 +29,7 @@ import {
   UIActivityIndicator,
   WaveIndicator,
 } from 'react-native-indicators';
-import {GiftedChat} from 'react-native-gifted-chat';
+import { GiftedChat } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
@@ -50,7 +50,7 @@ import {
   TextAnimationReverse,
   TextAnimationDeZoom,
 } from 'react-native-text-effects';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import moment from 'moment';
 import AnswerAI from './AnswerAI';
 import useDeviceVolume from './customhook/useDeviceVolume';
@@ -66,11 +66,13 @@ import useMQTT from './customhook/useMQTT';
 export default function AI(props) {
   const [visible, setVisible] = React.useState(true);
 
-  const showModal = (data) =>{ setVisible(data); console.log('========jkoi============================');
-  console.log(visible);
-  console.log('====================================');}
+  const showModal = (data) => {
+    setVisible(data); console.log('========jkoi============================');
+    console.log(visible);
+    console.log('====================================');
+  }
   const hideModal = () => setVisible(false);
-  const containerStyle = {backgroundColor: 'white', padding: 20};
+  const containerStyle = { backgroundColor: 'white', padding: 20 };
 
   //   const route = useRoute()
   // /
@@ -88,8 +90,8 @@ export default function AI(props) {
 
 
 
- 
-  
+
+
 
   const StopRecording = () => {
     Tts.addEventListener;
@@ -97,12 +99,12 @@ export default function AI(props) {
     Tts.stop();
   };
 
-  const NetworkError = () => {};
+  const NetworkError = () => { };
 
   LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
   LogBox.ignoreAllLogs(); // Ignore all log notifications
 
-  const {width, height} = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [result, setResult] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [recognized, setRecognized] = useState('');
@@ -124,36 +126,36 @@ export default function AI(props) {
   const [MQTT, setMQTT] = useState("Trigger Not Detected")
   const [text, setText] = useState('connected');
   const [client, publishMessage] = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467', '/data', text);
-const [wifiData, setwifiData] = useState('')
-const [speechEndTrigger,setSpeechEndTrigger ] = useState(false)
+  const [wifiData, setwifiData] = useState('')
+  const [speechEndTrigger, setSpeechEndTrigger] = useState(false)
 
   // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
   const [startTime, setstartTime] = useState(new Date());
-  const {volume, increaseFullDeviceVolume, decreaseFullDeviceVolume} =
+  const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
     useDeviceVolume();
   const [name, setName] = useState('Sonic');
 
   // console.log(mqttClient,"mqttClient");
 
-  const speechEndTriggerController = (data)=>{
+  const speechEndTriggerController = (data) => {
     setSpeechEndTrigger(data)
   }
 
   const setRecodingResult = data => {
     setResult(data);
   };
-  
+
 
   Voice.onSpeechEnd = () => setIsRecording(false);
   Voice.onSpeechError = err => setError(err.error);
   Voice.onSpeechResults = result => setRecodingResult(result.value[0]);
 
-useEffect(() => {
-  const timeDifference = new Date() - startTime;
+  useEffect(() => {
+    const timeDifference = new Date() - startTime;
     if (timeDifference > 100000 && result.length <= 0 && assestant) {
       assistanceTrigger(false);
     }
-},)
+  },)
 
 
   const handleButtonClick = () => {
@@ -163,7 +165,7 @@ useEffect(() => {
   useEffect(() => {
     handleButtonClick()
   }, [text])
-  
+
   // Start recording //
 
   const startRecording = async () => {
@@ -173,7 +175,7 @@ useEffect(() => {
   };
 
   useEffect(() => {
-   
+
 
     TriggerWord.get().then(data =>
       data.forEach(doc => {
@@ -211,78 +213,79 @@ useEffect(() => {
     setSecondS(false);
   }
 
-const setTextVale = useCallback(
-  (data) =>{
-    setText(pre=>{if(pre !== data){
-      return data
-    }
-    return ""
-  })
-  },
-  [setText],
-)
+  const setTextVale = useCallback(
+    (data) => {
+      setText(pre => {
+        if (pre !== data) {
+          return data
+        }
+        return ""
+      })
+    },
+    [setText],
+  )
 
 
 
 
-const granted =  PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Location permission is required for WiFi connections',
-        message:
-          'This app needs location permission as this is required  ' +
-          'to scan for wifi networks.',
-        buttonNegative: 'DENY',
-        buttonPositive: 'ALLOW',
-      },
-);
-if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  const granted = PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    {
+      title: 'Location permission is required for WiFi connections',
+      message:
+        'This app needs location permission as this is required  ' +
+        'to scan for wifi networks.',
+      buttonNegative: 'DENY',
+      buttonPositive: 'ALLOW',
+    },
+  );
+  if (granted === PermissionsAndroid.RESULTS.GRANTED) {
     // You can now use react-native-wifi-reborn
-} else {
+  } else {
     // Permission denied
-}
-
-
-const wifi = async () => {
-  try {
-    const data = await WifiManager.connectToProtectedSSID(
-      ssid,
-      password,
-      isWep,
-    );
-    console.log('Connected successfully!', {data});
-    // setConneted({connected: true, ssid});
-  } catch (error) {
-    // setConneted({connected: false, error: error.message});
-    console.log('Connection failed!', {error});
   }
 
-  try {
-    const ssid = await WifiManager.getCurrentWifiSSID();
-    const BSSID = await WifiManager.getBSSID();
-    const Ip = await WifiManager.getIP()
-    const SignalStrength = await WifiManager.getCurrentSignalStrength()
-    
 
-    
-    
-  const wifiDetails = {wifiDetails:{ssid,BSSID,Ip,SignalStrength}}
-  // setTextVale(wifiDetails)
-  let wifidata = JSON.stringify(wifiDetails) 
-  setwifiData(wifidata)
-  
-    // setSsid(ssid);
-    console.log('Your current connected wifi SSID is ' + JSON.stringify( wifiDetails));
-  } catch (error) {
-    // setSsid('Cannot get current SSID!' + error.message);
-    console.log('Cannot get current SSID!', {error});
-  }
-};
+  const wifi = async () => {
+    try {
+      const data = await WifiManager.connectToProtectedSSID(
+        ssid,
+        password,
+        isWep,
+      );
+      console.log('Connected successfully!', { data });
+      // setConneted({connected: true, ssid});
+    } catch (error) {
+      // setConneted({connected: false, error: error.message});
+      console.log('Connection failed!', { error });
+    }
 
-useEffect(()=>{
-  wifi()
-  
-},[])
+    try {
+      const ssid = await WifiManager.getCurrentWifiSSID();
+      const BSSID = await WifiManager.getBSSID();
+      const Ip = await WifiManager.getIP()
+      const SignalStrength = await WifiManager.getCurrentSignalStrength()
+
+
+
+
+      const wifiDetails = { wifiDetails: { ssid, BSSID, Ip, SignalStrength } }
+      // setTextVale(wifiDetails)
+      let wifidata = JSON.stringify(wifiDetails)
+      setwifiData(wifidata)
+
+      // setSsid(ssid);
+      console.log('Your current connected wifi SSID is ' + JSON.stringify(wifiDetails));
+    } catch (error) {
+      // setSsid('Cannot get current SSID!' + error.message);
+      console.log('Cannot get current SSID!', { error });
+    }
+  };
+
+  useEffect(() => {
+    wifi()
+
+  }, [])
 
 
 
@@ -294,15 +297,15 @@ useEffect(()=>{
   // jestin xavier
   useEffect(() => {
     if (!IsTriger) {
-     
+
       startRecording();
     } else {
       stopRecording();
-     
+
     }
   }, [startRecording, IsTriger]);
 
-  const TextToSpeech = (data,status=true) => {
+  const TextToSpeech = (data, status = true) => {
     increaseFullDeviceVolume();
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
@@ -310,16 +313,16 @@ useEffect(()=>{
     Tts.addEventListener('tts-finish', () => {
 
       console.log('Speech finished');
-      if(status){
-      if(!speechEndTrigger){
-      setTextVale("Speech End");
-      }
-      speechEndTriggerController(true)
-      triggerGenerate(false);
+      if (status) {
+        if (!speechEndTrigger) {
+          setTextVale("Speech End");
+        }
+        speechEndTriggerController(true)
+        triggerGenerate(false);
       }
     });
 
-    
+
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
@@ -373,7 +376,7 @@ useEffect(()=>{
       setTextVale("Trigger Word Dectected");
       triggerGenerate(true);
       initialSetResult();
-     
+
       TextToSpeech(`HI i am ${name} from Devlacus`);
       assistanceTrigger(true);
     }
@@ -381,8 +384,8 @@ useEffect(()=>{
   }, [result]);
 
   const Responcenavigate = data => {
-    if(secondS){
-    setTextVale("Speech End");
+    if (secondS) {
+      setTextVale("Speech End");
     }
     setSecondS(data);
   };
@@ -396,14 +399,14 @@ useEffect(()=>{
   useEffect(() => {
     setTextVale(wifiData)
   }, [wifiData])
-  
-useEffect(() => {
-  if(result.length <=0 && !IsTriger && assestant && !secondS){
-    setTextVale("Listening Start");
-  }
-}, [assestant,IsTriger,secondS])
 
-  useEffect( () => {
+  useEffect(() => {
+    if (result.length <= 0 && !IsTriger && assestant && !secondS) {
+      setTextVale("Listening Start");
+    }
+  }, [assestant, IsTriger, secondS])
+
+  useEffect(() => {
     if (result.length > 0) {
       // VoiceController(true)
 
@@ -413,9 +416,9 @@ useEffect(() => {
       // Get the value at the random index
       const randomValue = myArray[randomIndex];
 
-      console.log('Prints a random value from the array',randomValue); // Prints a random value from the array
+      console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
       speechEndTriggerController(false)
-     
+
       let regex = new RegExp(name, 'gi');
       let FilterData = result.replace(regex, '');
       // let FilterData = result.replace(/diya/gi, "");
@@ -423,7 +426,7 @@ useEffect(() => {
         triggerGenerate(true);
         // console.log(API_KEY, '=====================axios call===============');
         setTextVale("Listening End");
-      //  TextToSpeech(randomValue)
+        //  TextToSpeech(randomValue)
 
         axios({
           method: 'post',
@@ -433,14 +436,14 @@ useEffect(() => {
             Authorization: `Bearer ${API_KEY}`,
           },
           data: {
-            messages: [{role: 'user', content: FilterData}],
+            messages: [{ role: 'user', content: FilterData }],
             model: 'gpt-3.5-turbo',
           },
         })
           .then(res => {
             console.log(res.data);
-            
-            const  paragraph= res.data?.choices[0]?.message?.content;
+
+            const paragraph = res.data?.choices[0]?.message?.content;
             const message = paragraph.replace(/OpenAI/gi, "Devlacus");
             console.log(message);
 
@@ -466,7 +469,7 @@ useEffect(() => {
             showModal(false);
           });
       }
-    
+
     }
 
   }, [result]);
@@ -501,72 +504,72 @@ useEffect(() => {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{top: 40, display: 'flex', flexDirection: 'column'}}>
-            <View style={{alignItems:'center' }}>
-            {!visible ? (
-              <View
-                style={{
-                  width: responsiveWidth(50),
-                  height: responsiveHeight(70),
-                  backgroundColor: '#000',
-                  elevation: 3,
-                  borderRadius: 40,
-                  borderWidth: 1,
-                  borderColor: '#DDD',
-                }}>
-                <Provider>                 
-                <View style={{display:'flex',justifyContent:'flex-end',alignItems:'flex-end',marginRight:30,marginTop:20}}>
-                <Icon name="close" size={30} color="#fff" onPress={()=>showModal(true)} />
-                </View>
-                  <View
-                    style={{
-                      justifyContent: 'center',
-                      alignSelf: 'center',
-                      // top: 30,
-                      flex:1
-                      
-                    }}>
-                    <Image
-                      style={{width: 120, height: 120}}
-                      source={require('../assets/server.png')}
-                    />
-
-
-                    <View style={{top: 10}}>
-                      <Text
-                        style={{
-                          color: '#fff',
-                          fontSize: 19,
-                          fontWeight: '400',
-                        }}>
-                        Network error
-                      </Text>
+          <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
+            <View style={{ alignItems: 'center' }}>
+              {!visible ? (
+                <View
+                  style={{
+                    width: responsiveWidth(50),
+                    height: responsiveHeight(70),
+                    backgroundColor: '#000',
+                    elevation: 3,
+                    borderRadius: 40,
+                    borderWidth: 1,
+                    borderColor: '#DDD',
+                  }}>
+                  <Provider>
+                    <View style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', marginRight: 30, marginTop: 20 }}>
+                      <Icon name="close" size={30} color="#fff" onPress={() => showModal(true)} />
                     </View>
-                  
-                  </View>
-                  {/* <Button style={{marginTop: 30}} onPress={showModal}>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignSelf: 'center',
+                        // top: 30,
+                        flex: 1
+
+                      }}>
+                      <Image
+                        style={{ width: 120, height: 120 }}
+                        source={require('../assets/server.png')}
+                      />
+
+
+                      <View style={{ top: 10 }}>
+                        <Text
+                          style={{
+                            color: '#fff',
+                            fontSize: 19,
+                            fontWeight: '400',
+                          }}>
+                          Network error
+                        </Text>
+                      </View>
+
+                    </View>
+                    {/* <Button style={{marginTop: 30}} onPress={showModal}>
                     Go back
                   </Button> */}
-                </Provider>
-              </View>
-            ) : (
-              <ImageBackground
-                style={{
-                  height: responsiveWidth(30),
-                  width: responsiveWidth(30),
-                }}
-                imageStyle={{borderRadius: 200, flex: 1}}
-                source={ require('../assets/jasmin.gif')}></ImageBackground>
-            )}
-          </View> 
-            <View style={{alignItems: 'center', flex: 1,}}>
+                  </Provider>
+                </View>
+              ) : (
+                <ImageBackground
+                  style={{
+                    height: responsiveWidth(30),
+                    width: responsiveWidth(30),
+                  }}
+                  imageStyle={{ borderRadius: 200, flex: 1 }}
+                  source={require('../assets/jasmin.gif')}></ImageBackground>
+              )}
+            </View>
+            <View style={{ alignItems: 'center', flex: 1, }}>
               {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
 
               <Text style={{ color: '#fff', fontSize: 25, fontWeight: '200' }}>{result}</Text>
 
             </View> */}
 
-              <View style={{alignItems: 'center'}}>
+              <View style={{ alignItems: 'center' }}>
                 {assestant ? (
                   result.length > 0 ? (
                     <Text
@@ -574,7 +577,7 @@ useEffect(() => {
                         color: '#fff',
                         fontSize: responsiveFontSize(2.5),
                         fontWeight: '300',
-                      }}> 
+                      }}>
                       {result}
                     </Text>
                   ) : (
@@ -596,7 +599,7 @@ useEffect(() => {
 
           <TouchableOpacity
             onPress={() => startRecording()}
-            onLongPress={()=> assistanceTrigger(false)}
+            onLongPress={() => assistanceTrigger(false)}
             style={styles.floatingButton}>
             <View style={styles.buttonContainer}>
               {result == false ? (
@@ -607,7 +610,7 @@ useEffect(() => {
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
-                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  imageStyle={{ borderRadius: 200, elevation: 4 }}
                   source={
                     require('../assets/gradientBlue.jpeg')
                   }>
@@ -636,7 +639,7 @@ useEffect(() => {
                     borderColor: '#19ecf7',
                     borderRadius: 200,
                   }}
-                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  imageStyle={{ borderRadius: 200, elevation: 4 }}
                   source={
                     require('../assets/gradientBlue.jpeg')
                   }>
@@ -677,7 +680,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 5, // for android shadow effect
     shadowColor: '#000', // for ios shadow effect
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
     borderRadius: 200,
