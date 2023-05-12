@@ -5,6 +5,7 @@ import Tts from 'react-native-tts';
 
 
 export const StopRecording = () => {
+    
     Tts.addEventListener
     Voice.destroy()
     Tts.stop()

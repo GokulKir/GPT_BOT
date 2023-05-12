@@ -10,12 +10,13 @@ import {
   ImageBackground,
   TextInput,
 } from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { PermissionsAndroid } from 'react-native';
 import Voice from '@react-native-community/voice';
-import {ScrollView} from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import Tts from 'react-native-tts';
 import axios from 'axios';
-import {Modal, Portal, Button, Provider, Snackbar} from 'react-native-paper';
+import { Modal, Portal, Button, Provider, Snackbar } from 'react-native-paper';
 import { WIFIDATA } from './customhook/wifiServer';
 import {
   BallIndicator,
@@ -28,7 +29,7 @@ import {
   UIActivityIndicator,
   WaveIndicator,
 } from 'react-native-indicators';
-import {GiftedChat} from 'react-native-gifted-chat';
+import { GiftedChat } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
@@ -49,11 +50,10 @@ import {
   TextAnimationReverse,
   TextAnimationDeZoom,
 } from 'react-native-text-effects';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import moment from 'moment';
 import AnswerAI from './AnswerAI';
 import useDeviceVolume from './customhook/useDeviceVolume';
-import WifiManager from "react-native-wifi-reborn";
 import {
   Collection,
   KeyCollection,
@@ -65,11 +65,13 @@ import useMQTT from './customhook/useMQTT';
 export default function AI(props) {
   const [visible, setVisible] = React.useState(true);
 
-  const showModal = (data) =>{ setVisible(data); console.log('========jkoi============================');
-  console.log(visible);
-  console.log('====================================');}
+  const showModal = (data) => {
+    setVisible(data); console.log('========jkoi============================');
+    console.log(visible);
+    console.log('====================================');
+  }
   const hideModal = () => setVisible(false);
-  const containerStyle = {backgroundColor: 'white', padding: 20};
+  const containerStyle = { backgroundColor: 'white', padding: 20 };
 
   //   const route = useRoute()
   // /
@@ -85,32 +87,10 @@ export default function AI(props) {
 
   //    },[props])
 
-  useEffect(()=>{
-
-    WifiManager.connectToProtectedSSID(ssid, password, isWep).then(
-      () => {
-        console.log("Connected successfully!");
-      },
-      () => {
-        console.log("Connection failed!");
-      }
-    );
-    
-    WifiManager.getCurrentWifiSSID().then(
-      ssid => {
-        console.log("Your current connected wifi SSID is " + ssid);
-      },
-      () => {
-        console.log("Cannot get current SSID!");
-      }
-    );
-
-    WifiManager.setEnabled(true); 
-  })
 
 
- 
-  
+
+
 
   const StopRecording = () => {
     Tts.addEventListener;
@@ -118,12 +98,12 @@ export default function AI(props) {
     Tts.stop();
   };
 
-  const NetworkError = () => {};
+  const NetworkError = () => { };
 
   LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
   LogBox.ignoreAllLogs(); // Ignore all log notifications
 
-  const {width, height} = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [result, setResult] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [recognized, setRecognized] = useState('');
@@ -145,32 +125,73 @@ export default function AI(props) {
   const [MQTT, setMQTT] = useState("Trigger Not Detected")
   const [text, setText] = useState('connected');
   const [client, publishMessage] = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467', '/data', text);
-
+  const [wifiData, setwifiData] = useState('')
+  const [speechEndTrigger, setSpeechEndTrigger] = useState(false)
 
   // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
   const [startTime, setstartTime] = useState(new Date());
-  const {volume, increaseFullDeviceVolume, decreaseFullDeviceVolume} =
+  const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
     useDeviceVolume();
   const [name, setName] = useState('Sonic');
+  const [Gpname , setGpname] = useState("What is your name") ;
+
+
+
+
+  //Request Permission //
+
+  async function requestBluetoothPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: 'Bluetooth Permission',
+          message:
+            'This app needs access to your location to discover nearby Bluetooth devices.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Bluetooth permission granted');
+      } else {
+        console.log('Bluetooth permission denied');
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
+  useEffect(()=> {
+  requestBluetoothPermission()
+  } , [requestBluetoothPermission])
+  
+
+    //Request Permission //
+
 
   // console.log(mqttClient,"mqttClient");
+
+  const speechEndTriggerController = (data) => {
+    setSpeechEndTrigger(data)
+  }
 
   const setRecodingResult = data => {
     setResult(data);
   };
-  
+
 
   Voice.onSpeechEnd = () => setIsRecording(false);
   Voice.onSpeechError = err => setError(err.error);
   Voice.onSpeechResults = result => setRecodingResult(result.value[0]);
 
-useEffect(() => {
-  const timeDifference = new Date() - startTime;
-console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,assestant );
+  useEffect(() => {
+    const timeDifference = new Date() - startTime;
     if (timeDifference > 100000 && result.length <= 0 && assestant) {
       assistanceTrigger(false);
     }
-},)
+  },)
 
 
   const handleButtonClick = () => {
@@ -180,24 +201,20 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
   useEffect(() => {
     handleButtonClick()
   }, [text])
-  
+
   // Start recording //
 
   const startRecording = async () => {
     decreaseFullDeviceVolume();
     // Voice.onSpeechRecognized((res)=>console.log(res))
-    console.log('====================================');
-    console.log('Recoding voice', IsTriger);
-    console.log('====================================');
     await Voice.start('en-US');
   };
 
   useEffect(() => {
-   
+
 
     TriggerWord.get().then(data =>
       data.forEach(doc => {
-        console.log(doc.id, ' => ', doc.data().triggerName);
         let triggerName = doc.data().triggerName;
         setName(triggerName);
       }),
@@ -206,7 +223,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
     let key = '';
     KeyCollection.get().then(data =>
       data.forEach(doc => {
-        console.log(doc.id, ' => ', doc.data()?.DevBotKey);
         key = doc.data()?.DevBotKey;
         SET_API_KEY(key);
       }),
@@ -218,7 +234,6 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
   //Stop recording //
 
   const stopRecording = async () => {
-    console.log('stpo recoding*****');
     setStarted(false);
     setLoading(false);
     setIsOrNot(true);
@@ -234,12 +249,17 @@ console.log("timeDifference > 000 ",timeDifference > 200000,result.length <= 0 ,
     setSecondS(false);
   }
 
-const setTextVale = useCallback(
-  (data) =>{
-    setText(data)
-  },
-  [setText],
-)
+  const setTextVale = useCallback(
+    (data) => {
+      setText(pre => {
+        if (pre !== data) {
+          return data
+        }
+        return ""
+      })
+    },
+    [setText],
+  )
 
 
 
@@ -249,24 +269,32 @@ const setTextVale = useCallback(
   // jestin xavier
   useEffect(() => {
     if (!IsTriger) {
-     
+
       startRecording();
     } else {
       stopRecording();
-     
+
     }
   }, [startRecording, IsTriger]);
 
-  const TextToSpeech = data => {
+  const TextToSpeech = (data, status = true) => {
     increaseFullDeviceVolume();
     // console.log(IsTriger,'text to speech');
     // if(IsTriger){
 
     Tts.addEventListener('tts-finish', () => {
+
       console.log('Speech finished');
-      setTextVale("Speech Ented");
-      triggerGenerate(false);
+      if (status) {
+        if (!speechEndTrigger) {
+          setTextVale("Speech End");
+        }
+        speechEndTriggerController(true)
+        triggerGenerate(false);
+      }
     });
+
+
     Tts.speak(data, {
       androidParams: {
         KEY_PARAM_PAN: -1,
@@ -306,11 +334,7 @@ const setTextVale = useCallback(
   );
 
   useEffect(() => {
-    console.log(
-      result,
-      result === 'Alexa' || result === 'hi Alexa' || result === 'hey Alexa',
-      '******hey dana*****',
-    );
+
 
     // if (result === "Dana" || result === "hi Dana" || result === "hey Dana" || result == "hi Dyna" || result === "hi Diana"  ) {
 
@@ -319,26 +343,22 @@ const setTextVale = useCallback(
         result === `hi ${name}` ||
         result === `hey ${name}` ||
         result.includes(name)) &&
+        result.includes(Gpname) &&
       !assestant
     ) {
       setTextVale("Trigger Word Dectected");
       triggerGenerate(true);
       initialSetResult();
-     
+
       TextToSpeech(`HI i am ${name} from Devlacus`);
       assistanceTrigger(true);
     }
 
-//     const timeDifference = new Date() - startTime;
-// console.log("timeDifference > 15000 ",timeDifference > 15000 );
-//     if (timeDifference > 15000 && result.length <= 0 && assestant) {
-//       assistanceTrigger(true);
-//     }
   }, [result]);
 
   const Responcenavigate = data => {
-    if(secondS){
-    setTextVale("Speech Ented");
+    if (secondS) {
+      setTextVale("Speech End");
     }
     setSecondS(data);
   };
@@ -350,19 +370,37 @@ const setTextVale = useCallback(
   }, [secondS]);
 
   useEffect(() => {
-    console.log('====================================');
-    console.log(result);
-    console.log('====================================');
+    setTextVale(wifiData)
+  }, [wifiData])
+
+  useEffect(() => {
+    if (result.length <= 0 && !IsTriger && assestant && !secondS) {
+      setTextVale("Listening Start");
+    }
+  }, [assestant, IsTriger, secondS])
+
+  useEffect(() => {
     if (result.length > 0) {
       // VoiceController(true)
-     
+
+      const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
+      // Generate a random index between 0 and the length of the array minus 1
+      const randomIndex = Math.floor(Math.random() * myArray.length);
+      // Get the value at the random index
+      const randomValue = myArray[randomIndex];
+
+      console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
+      speechEndTriggerController(false)
+
       let regex = new RegExp(name, 'gi');
       let FilterData = result.replace(regex, '');
       // let FilterData = result.replace(/diya/gi, "");
       if (!IsTriger && assestant) {
         triggerGenerate(true);
-        console.log(API_KEY, '=====================axios call===============');
-       
+        // console.log(API_KEY, '=====================axios call===============');
+        setTextVale("Listening End");
+        //  TextToSpeech(randomValue)
+
         axios({
           method: 'post',
           url: 'https://api.openai.com/v1/chat/completions',
@@ -371,20 +409,20 @@ const setTextVale = useCallback(
             Authorization: `Bearer ${API_KEY}`,
           },
           data: {
-            messages: [{role: 'user', content: FilterData}],
+            messages: [{ role: 'user', content: FilterData }],
             model: 'gpt-3.5-turbo',
           },
         })
           .then(res => {
             console.log(res.data);
-            
-            const  paragraph= res.data?.choices[0]?.message?.content;
+
+            const paragraph = res.data?.choices[0]?.message?.content;
             const message = paragraph.replace(/OpenAI/gi, "Devlacus");
             console.log(message);
 
             setIsSpeak(message?.trim());
             increaseFullDeviceVolume();
-            setTextVale("Speech Started");
+            setTextVale("Speech Start");
             TextToSpeech(message);
 
             Responcenavigate(true);
@@ -404,42 +442,9 @@ const setTextVale = useCallback(
             showModal(false);
           });
       }
+
     }
-    // if (!IsTriger && assestant) {
-    //   triggerGenerate(true);
-    //   console.log('=====================fetch call===============');
 
-    //   fetch("https://api.openai.com/v1/chat/completions", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "Authorization": "Bearer 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"
-    //     },
-    //     body: JSON.stringify({
-    //       messages: [{ role: "user", content: FilterData }],
-    //       model: "gpt-3.5-turbo"
-    //     })
-    //   })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     console.log(data);
-    //     const message = data?.choices[0]?.message?.content;
-    //     console.log(message);
-
-    //     setIsSpeak(message?.trim());
-    //     increaseFullDeviceVolume();
-    //     TextToSpeech(message);
-
-    //     Responcenavigate(true);
-
-    //     setIsSpeak(data?.choices[0].message?.content.trim());
-    //     TextToSpeech(data?.choices[0].message?.content);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //     showModal();
-    //   });
-    // }
   }, [result]);
   /**
    * The DistroySpeech function is used to distroy the text to speech and it will navigate to home screen
@@ -456,11 +461,11 @@ const setTextVale = useCallback(
 
   const Dimention = useWindowDimensions();
 
-  useEffect(() => {
-    console.log('====================================');
-    console.log(result);
-    console.log('====================================');
-  });
+  // useEffect(() => {
+  //   console.log('====================================');
+  //   console.log(result);
+  //   console.log('====================================');
+  // });
 
   return (
     <View style={styles.container}>
@@ -472,72 +477,72 @@ const setTextVale = useCallback(
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <View style={{top: 40, display: 'flex', flexDirection: 'column'}}>
-            <View style={{alignItems:'center' }}>
-            {!visible ? (
-              <View
-                style={{
-                  width: responsiveWidth(50),
-                  height: responsiveHeight(70),
-                  backgroundColor: '#000',
-                  elevation: 3,
-                  borderRadius: 40,
-                  borderWidth: 1,
-                  borderColor: '#DDD',
-                }}>
-                <Provider>                 
-                <View style={{display:'flex',justifyContent:'flex-end',alignItems:'flex-end',marginRight:30,marginTop:20}}>
-                <Icon name="close" size={30} color="#fff" onPress={()=>showModal(true)} />
-                </View>
-                  <View
-                    style={{
-                      justifyContent: 'center',
-                      alignSelf: 'center',
-                      // top: 30,
-                      flex:1
-                      
-                    }}>
-                    <Image
-                      style={{width: 120, height: 120}}
-                      source={require('../assets/server.png')}
-                    />
-
-
-                    <View style={{top: 10}}>
-                      <Text
-                        style={{
-                          color: '#fff',
-                          fontSize: 19,
-                          fontWeight: '400',
-                        }}>
-                        Network error
-                      </Text>
+          <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
+            <View style={{ alignItems: 'center' }}>
+              {!visible ? (
+                <View
+                  style={{
+                    width: responsiveWidth(50),
+                    height: responsiveHeight(70),
+                    backgroundColor: '#000',
+                    elevation: 3,
+                    borderRadius: 40,
+                    borderWidth: 1,
+                    borderColor: '#DDD',
+                  }}>
+                  <Provider>
+                    <View style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', marginRight: 30, marginTop: 20 }}>
+                      <Icon name="close" size={30} color="#fff" onPress={() => showModal(true)} />
                     </View>
-                  
-                  </View>
-                  {/* <Button style={{marginTop: 30}} onPress={showModal}>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignSelf: 'center',
+                        // top: 30,
+                        flex: 1
+
+                      }}>
+                      <Image
+                        style={{ width: 120, height: 120 }}
+                        source={require('../assets/server.png')}
+                      />
+
+
+                      <View style={{ top: 10 }}>
+                        <Text
+                          style={{
+                            color: '#fff',
+                            fontSize: 19,
+                            fontWeight: '400',
+                          }}>
+                          Network error
+                        </Text>
+                      </View>
+
+                    </View>
+                    {/* <Button style={{marginTop: 30}} onPress={showModal}>
                     Go back
                   </Button> */}
-                </Provider>
-              </View>
-            ) : (
-              <ImageBackground
-                style={{
-                  height: responsiveWidth(30),
-                  width: responsiveWidth(30),
-                }}
-                imageStyle={{borderRadius: 200, flex: 1}}
-                source={ require('../assets/jasmin.gif')}></ImageBackground>
-            )}
-          </View> 
-            <View style={{alignItems: 'center', flex: 1,}}>
+                  </Provider>
+                </View>
+              ) : (
+                <ImageBackground
+                  style={{
+                    height: responsiveWidth(30),
+                    width: responsiveWidth(30),
+                  }}
+                  imageStyle={{ borderRadius: 200, flex: 1 }}
+                  source={require('../assets/jasmin.gif')}></ImageBackground>
+              )}
+            </View>
+            <View style={{ alignItems: 'center', flex: 1, }}>
               {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
 
               <Text style={{ color: '#fff', fontSize: 25, fontWeight: '200' }}>{result}</Text>
 
             </View> */}
 
-              <View style={{alignItems: 'center'}}>
+              <View style={{ alignItems: 'center' }}>
                 {assestant ? (
                   result.length > 0 ? (
                     <Text
@@ -545,7 +550,7 @@ const setTextVale = useCallback(
                         color: '#fff',
                         fontSize: responsiveFontSize(2.5),
                         fontWeight: '300',
-                      }}> 
+                      }}>
                       {result}
                     </Text>
                   ) : (
@@ -567,7 +572,7 @@ const setTextVale = useCallback(
 
           <TouchableOpacity
             onPress={() => startRecording()}
-            onLongPress={()=> assistanceTrigger(false)}
+            onLongPress={() => assistanceTrigger(false)}
             style={styles.floatingButton}>
             <View style={styles.buttonContainer}>
               {result == false ? (
@@ -578,7 +583,7 @@ const setTextVale = useCallback(
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
-                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  imageStyle={{ borderRadius: 200, elevation: 4 }}
                   source={
                     require('../assets/gradientBlue.jpeg')
                   }>
@@ -607,7 +612,7 @@ const setTextVale = useCallback(
                     borderColor: '#19ecf7',
                     borderRadius: 200,
                   }}
-                  imageStyle={{borderRadius: 200, elevation: 4}}
+                  imageStyle={{ borderRadius: 200, elevation: 4 }}
                   source={
                     require('../assets/gradientBlue.jpeg')
                   }>
@@ -648,7 +653,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 5, // for android shadow effect
     shadowColor: '#000', // for ios shadow effect
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
     borderRadius: 200,

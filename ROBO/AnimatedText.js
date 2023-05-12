@@ -19,7 +19,7 @@ const TextAutoScroll = ({ text, delay = 1500 }) => {
       if (chunk.length + word.length <= 200) { // check if the current chunk + the next word exceeds 20 characters
         chunk += `${word} `;
       } else {
-        splitText.push(chunk.trim()); 
+        splitText.push(chunk.trim());
         chunk = `${word} `;
       }
     }
@@ -28,12 +28,17 @@ const TextAutoScroll = ({ text, delay = 1500 }) => {
     }
     setChunks(splitText);
   }, [text]);
-  
+
+  const myArray = ["apple", "banana", "cherry", "date"];
+
+
+
+
 
   useEffect(() => {
     let index = 0;
     const interval = setInterval(() => {
-      scrollViewRef.current.scrollTo({ y: index * 200, animated: true }); 
+      scrollViewRef.current.scrollTo({ y: index * 200, animated: true });
       index++;
       if (index === chunks.length) {
         clearInterval(interval);
@@ -46,7 +51,7 @@ const TextAutoScroll = ({ text, delay = 1500 }) => {
   return (
     <ScrollView ref={scrollViewRef}>
       {chunks.map((chunk, index) => (
-        <Text style={{color:'#fff',fontSize:responsiveFontSize(2),textAlign:'center'}} key={index}>{chunk}</Text>
+        <Text style={{ color: '#fff', fontSize: responsiveFontSize(2), textAlign: 'center' }} key={index}>{chunk}</Text>
       ))}
     </ScrollView>
   );
