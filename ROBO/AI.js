@@ -33,6 +33,8 @@ import { GiftedChat } from 'react-native-gifted-chat';
 import Icon from 'react-native-vector-icons/dist/AntDesign';
 import Icon1 from 'react-native-vector-icons/dist/MaterialIcons';
 import Icon2 from 'react-native-vector-icons/dist/Ionicons';
+import Icon3 from 'react-native-vector-icons/dist/Feather';
+
 import {
   responsiveHeight,
   responsiveWidth,
@@ -54,6 +56,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import moment from 'moment';
 import AnswerAI from './AnswerAI';
 import useDeviceVolume from './customhook/useDeviceVolume';
+import { changeVolume } from 'react-native-volume-control';
+import Slider from "react-native-slider";
 import {
   Collection,
   KeyCollection,
@@ -61,9 +65,12 @@ import {
 } from './customhook/BackendServer';
 import AnimateTriggerText from './AnimateTriggerText';
 import useMQTT from './customhook/useMQTT';
+import ChangeDeviceVolume from './customhook/VolumeSlide';
 
 export default function AI(props) {
+  const navigation = useNavigation();
   const [visible, setVisible] = React.useState(true);
+
 
   const showModal = (data) => {
     setVisible(data); console.log('========jkoi============================');
@@ -127,13 +134,14 @@ export default function AI(props) {
   const [client, publishMessage] = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467', '/data', text);
   const [wifiData, setwifiData] = useState('')
   const [speechEndTrigger, setSpeechEndTrigger] = useState(false)
-
+  const [NameS, setNameS] = useState(false)
+  const [Persone, setPersone] = useState("My name is jasmine")
   // const mqttClient = useMQTT('mqtt://sonic.domainenroll.com:1883', 'domainenroll:de120467');
   const [startTime, setstartTime] = useState(new Date());
   const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
     useDeviceVolume();
   const [name, setName] = useState('Sonic');
-  const [Gpname , setGpname] = useState("What is your name") ;
+  const [Gpname, setGpname] = useState("What is your name");
 
 
 
@@ -163,12 +171,12 @@ export default function AI(props) {
     }
   }
 
-  useEffect(()=> {
-  requestBluetoothPermission()
-  } , [requestBluetoothPermission])
-  
+  useEffect(() => {
+    requestBluetoothPermission()
+  }, [])
 
-    //Request Permission //
+
+  //Request Permission //
 
 
   // console.log(mqttClient,"mqttClient");
@@ -343,7 +351,6 @@ export default function AI(props) {
         result === `hi ${name}` ||
         result === `hey ${name}` ||
         result.includes(name)) &&
-        result.includes(Gpname) &&
       !assestant
     ) {
       setTextVale("Trigger Word Dectected");
@@ -380,70 +387,236 @@ export default function AI(props) {
   }, [assestant, IsTriger, secondS])
 
   useEffect(() => {
+
     if (result.length > 0) {
       // VoiceController(true)
 
-      const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
-      // Generate a random index between 0 and the length of the array minus 1
-      const randomIndex = Math.floor(Math.random() * myArray.length);
-      // Get the value at the random index
-      const randomValue = myArray[randomIndex];
+      setTextVale("Listening End");
 
-      console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
-      speechEndTriggerController(false)
+      if (result === "what is your name") {
 
-      let regex = new RegExp(name, 'gi');
-      let FilterData = result.replace(regex, '');
-      // let FilterData = result.replace(/diya/gi, "");
-      if (!IsTriger && assestant) {
-        triggerGenerate(true);
-        // console.log(API_KEY, '=====================axios call===============');
-        setTextVale("Listening End");
-        //  TextToSpeech(randomValue)
+          console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-        axios({
-          method: 'post',
-          url: 'https://api.openai.com/v1/chat/completions',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${API_KEY}`,
-          },
-          data: {
-            messages: [{ role: 'user', content: FilterData }],
-            model: 'gpt-3.5-turbo',
-          },
-        })
-          .then(res => {
-            console.log(res.data);
 
-            const paragraph = res.data?.choices[0]?.message?.content;
-            const message = paragraph.replace(/OpenAI/gi, "Devlacus");
-            console.log(message);
+          TextToSpeech(`My name is ${name} from Devlacus`);
 
-            setIsSpeak(message?.trim());
-            increaseFullDeviceVolume();
-            setTextVale("Speech Start");
-            TextToSpeech(message);
+          increaseFullDeviceVolume();
+          
+          setTextVale("Speech Start");
 
-            Responcenavigate(true);
-            setstartTime(new Date())
-            // setIsSpeak(res.data?.choices[0].message?.content.trim());
-            // TextToSpeech(res.data?.choices[0].message?.content);
-            Collection.add({
-              Qa: result,
-              Ans: message,
-              createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
-            }).then(res => {
-              console.log('Data added');
-            });
+
+
+
+
+
+
+
+        // if (
+        //   (result.toLowerCase === "what is your name" 
+        //   || result.toLowerCase === "your name" 
+        //   ||  result.toLowerCase === "tell me your name" 
+        //   || result.toLowerCase === "you name"  )
+
+        // ) {
+
+
+
+
+
+
+        // const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
+        // // Generate a random index between 0 and the length of the array minus 1
+        // const randomIndex = Math.floor(Math.random() * myArray.length);
+        // // Get the value at the random index
+        // const randomValue = myArray[randomIndex];
+
+        // console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
+        // speechEndTriggerController(false)
+
+        // let regex = new RegExp(name, 'gi');
+        // let FilterData = result.replace(regex, '');
+        // // let FilterData = result.replace(/diya/gi, "");
+        // if (!IsTriger && assestant) {
+        //   triggerGenerate(true);
+        //   // console.log(API_KEY, '=====================axios call===============');
+        //   setTextVale("Listening End");
+        //   //  TextToSpeech(randomValue)
+
+        //   axios({
+        //     method: 'post',
+        //     url: 'https://api.openai.com/v1/chat/completions',
+        //     headers: {
+        //       'Content-Type': 'application/json',
+        //       Authorization: `Bearer ${API_KEY}`,
+        //     },
+        //     data: {
+        //       messages: [{ role: 'user', content: FilterData }],
+        //       model: 'gpt-3.5-turbo',
+        //     },
+        //   })
+        //     .then(res => {
+        //       console.log(res.data);
+
+        //       const paragraph = res.data?.choices[0]?.message?.content;
+        //       const message = paragraph.replace(/OpenAI/gi, "Devlacus");
+        //       console.log(message);
+
+        //       setIsSpeak(message?.trim());
+        //       increaseFullDeviceVolume();
+        //       setTextVale("Speech Start");
+        //       TextToSpeech(message);
+
+        //       Responcenavigate(true);
+        //       setstartTime(new Date())
+        //       // setIsSpeak(res.data?.choices[0].message?.content.trim());
+        //       // TextToSpeech(res.data?.choices[0].message?.content);
+        //       Collection.add({
+        //         Qa: result,
+        //         Ans: message,
+        //         createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+        //       }).then(res => {
+        //         console.log('Data added');
+        //       });
+        //     })
+        //     .catch(error => {
+        //       console.error(error);
+        //       showModal(false);
+        //     });
+        // }
+        // }
+
+      } else {
+
+        const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
+        // Generate a random index between 0 and the length of the array minus 1
+        const randomIndex = Math.floor(Math.random() * myArray.length);
+        // Get the value at the random index
+        const randomValue = myArray[randomIndex];
+
+        console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
+        speechEndTriggerController(false)
+
+        let regex = new RegExp(name, 'gi');
+        let FilterData = result.replace(regex, '');
+        // let FilterData = result.replace(/diya/gi, "");
+        if (!IsTriger && assestant) {
+          triggerGenerate(true);
+          // console.log(API_KEY, '=====================axios call===============');
+          // setTextVale("Listening End");
+          //  TextToSpeech(randomValue)
+
+          axios({
+            method: 'post',
+            url: 'https://api.openai.com/v1/chat/completions',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${API_KEY}`,
+            },
+            data: {
+              messages: [{ role: 'user', content: FilterData }],
+              model: 'gpt-3.5-turbo',
+            },
           })
-          .catch(error => {
-            console.error(error);
-            showModal(false);
-          });
-      }
+            .then(res => {
+              console.log(res.data);
 
+              const paragraph = res.data?.choices[0]?.message?.content;
+              const message = paragraph.replace(/OpenAI/gi, "Devlacus");
+              console.log(message);
+
+              setIsSpeak(message?.trim());
+              increaseFullDeviceVolume();
+              setTextVale("Speech Start");
+              TextToSpeech(message);
+
+              Responcenavigate(true);
+              setstartTime(new Date())
+              // setIsSpeak(res.data?.choices[0].message?.content.trim());
+              // TextToSpeech(res.data?.choices[0].message?.content);
+              Collection.add({
+                Qa: result,
+                Ans: message,
+                createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+              }).then(res => {
+                console.log('Data added');
+              });
+            })
+            .catch(error => {
+              console.error(error);
+              showModal(false);
+            });
+        }
+
+
+      }
     }
+
+    // }  else {
+
+    //   const myArray = ["oh that's a really good question ", "Good One", "thats a clever", "date"];
+    //   // Generate a random index between 0 and the length of the array minus 1
+    //   const randomIndex = Math.floor(Math.random() * myArray.length);
+    //   // Get the value at the random index
+    //   const randomValue = myArray[randomIndex];
+
+    //   console.log('Prints a random value from the array', randomValue); // Prints a random value from the array
+    //   speechEndTriggerController(false)
+
+    //   let regex = new RegExp(name, 'gi');
+    //   let FilterData = result.replace(regex, '');
+    //   // let FilterData = result.replace(/diya/gi, "");
+    //   if (!IsTriger && assestant) {
+    //     triggerGenerate(true);
+    //     // console.log(API_KEY, '=====================axios call===============');
+    //     setTextVale("Listening End");
+    //     //  TextToSpeech(randomValue)
+
+    //     axios({
+    //       method: 'post',
+    //       url: 'https://api.openai.com/v1/chat/completions',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         Authorization: `Bearer ${API_KEY}`,
+    //       },
+    //       data: {
+    //         messages: [{ role: 'user', content: FilterData }],
+    //         model: 'gpt-3.5-turbo',
+    //       },
+    //     })
+    //       .then(res => {
+    //         console.log(res.data);
+
+    //         const paragraph = res.data?.choices[0]?.message?.content;
+    //         const message = paragraph.replace(/OpenAI/gi, "Devlacus");
+    //         console.log(message);
+
+    //         setIsSpeak(message?.trim());
+    //         increaseFullDeviceVolume();
+    //         setTextVale("Speech Start");
+    //         TextToSpeech(message);
+
+    //         Responcenavigate(true);
+    //         setstartTime(new Date())
+    //         // setIsSpeak(res.data?.choices[0].message?.content.trim());
+    //         // TextToSpeech(res.data?.choices[0].message?.content);
+    //         Collection.add({
+    //           Qa: result,
+    //           Ans: message,
+    //           createAt: moment().format('YYYY-MM-DD HH:mm:ss'),
+    //         }).then(res => {
+    //           console.log('Data added');
+    //         });
+    //       })
+    //       .catch(error => {
+    //         console.error(error);
+    //         showModal(false);
+    //       });
+    //   }
+
+
+
+
+    // }
 
   }, [result]);
   /**
@@ -469,7 +642,8 @@ export default function AI(props) {
 
   return (
     <View style={styles.container}>
-      {!secondS ? (
+      {!secondS ?
+       (
         <View
           style={{
             flex: 1,
@@ -477,6 +651,17 @@ export default function AI(props) {
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
+
+          <View style={{ alignSelf: 'flex-start', left: 20, top: 15 }}>
+            <TouchableOpacity onPress={() => navigation.navigate("Settings")} style={{ width: responsiveWidth(5), height: responsiveWidth(5), backgroundColor: '#53065c', borderRadius: 200, alignItems: 'center', justifyContent: 'center' }}>
+
+              <Icon3 name="settings" color="#fff" size={25} />
+
+            </TouchableOpacity>
+
+          </View>
+
+
           <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
             <View style={{ alignItems: 'center' }}>
               {!visible ? (
