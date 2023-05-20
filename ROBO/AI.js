@@ -98,7 +98,6 @@ export default function AI(props) {
 
 
 
-
   const StopRecording = () => {
     Tts.addEventListener;
     Voice.destroy();
@@ -140,8 +139,11 @@ export default function AI(props) {
   const [startTime, setstartTime] = useState(new Date());
   const { volume, increaseFullDeviceVolume, decreaseFullDeviceVolume } =
     useDeviceVolume();
-  const [name, setName] = useState('Sonic');
+  const [name, setName] = useState('Nora');
   const [Gpname, setGpname] = useState("What is your name");
+  const [nameAns, setNameAns] = useState("My name is ")
+  const [nameAns1, setNameAns1] = useState()
+
 
 
 
@@ -274,6 +276,11 @@ export default function AI(props) {
 
   //Stop recording //
 
+
+
+
+
+
   // jestin xavier
   useEffect(() => {
     if (!IsTriger) {
@@ -301,6 +308,8 @@ export default function AI(props) {
         triggerGenerate(false);
       }
     });
+
+
 
 
     Tts.speak(data, {
@@ -350,7 +359,23 @@ export default function AI(props) {
       (result === name ||
         result === `hi ${name}` ||
         result === `hey ${name}` ||
-        result.includes(name)) &&
+        result.includes(name) ||
+        result.includes("Nora") ||
+        result.includes("Norah") ||
+        result.includes("Aura") ||
+        result.includes("ora") ||
+        result.includes("Dora") ||
+        result.includes("Norahh") ||
+        result.includes("Nura") ||
+        result.includes("Rora") ||
+        result.includes("Nhora") ||
+        result.includes("Nhorah") ||
+        result.includes("Noora") ||
+        result.includes("Noorah")||
+        result.includes("Laura")||
+        result.includes("Laurah") ||
+        result.includes("Narah") ||
+        result.includes("Nara")) &&
       !assestant
     ) {
       setTextVale("Trigger Word Dectected");
@@ -393,16 +418,44 @@ export default function AI(props) {
 
       setTextVale("Listening End");
 
-      if (result === "what is your name") {
+      if (result === "what is your name" ||
+        result === "tell me your name" ||
+        result === "name" ||
+        result === "your name"
+      ) {
 
-          console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(nameAns + name);
+        setNameAns1(nameAns + name);
 
 
-          TextToSpeech(`My name is ${name} from Devlacus`);
 
-          increaseFullDeviceVolume();
+
+        setInterval(() => {
+
+          if (nameAns1 != null) {
+            setNameAns('')
+          } else {
+            
           
-          setTextVale("Speech Start");
+            setNameAns1('')
+            console.log("Answer is null");
+
+            const text = "My name is jasmin";
+
+            // Tts.speak(text);
+
+         
+
+
+
+          }
+
+        }, 4000);
+
+
+
+
+
 
 
 
@@ -640,182 +693,229 @@ export default function AI(props) {
   //   console.log('====================================');
   // });
 
+  useState(() => {
+    console.log(nameAns1);
+
+  })
+
   return (
     <View style={styles.container}>
       {!secondS ?
-       (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: '#000',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
+        (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: '#000',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
 
-          <View style={{ alignSelf: 'flex-start', left: 20, top: 15 }}>
+            {/* <View style={{ alignSelf: 'flex-start', left: 20, top: 15 }}>
             <TouchableOpacity onPress={() => navigation.navigate("Settings")} style={{ width: responsiveWidth(5), height: responsiveWidth(5), backgroundColor: '#53065c', borderRadius: 200, alignItems: 'center', justifyContent: 'center' }}>
 
               <Icon3 name="settings" color="#fff" size={25} />
 
             </TouchableOpacity>
 
-          </View>
+          </View> */}
 
 
-          <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
-            <View style={{ alignItems: 'center' }}>
-              {!visible ? (
-                <View
-                  style={{
-                    width: responsiveWidth(50),
-                    height: responsiveHeight(70),
-                    backgroundColor: '#000',
-                    elevation: 3,
-                    borderRadius: 40,
-                    borderWidth: 1,
-                    borderColor: '#DDD',
-                  }}>
-                  <Provider>
-                    <View style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', marginRight: 30, marginTop: 20 }}>
-                      <Icon name="close" size={30} color="#fff" onPress={() => showModal(true)} />
-                    </View>
-                    <View
-                      style={{
-                        justifyContent: 'center',
-                        alignSelf: 'center',
-                        // top: 30,
-                        flex: 1
+            <View style={{ top: 40, display: 'flex', flexDirection: 'column' }}>
+              <View style={{ alignItems: 'center' }}>
 
-                      }}>
-                      <Image
-                        style={{ width: 120, height: 120 }}
-                        source={require('../assets/server.png')}
-                      />
+                {nameAns1 === null ? null :
 
 
-                      <View style={{ top: 10 }}>
-                        <Text
-                          style={{
-                            color: '#fff',
-                            fontSize: 19,
-                            fontWeight: '400',
-                          }}>
-                          Network error
-                        </Text>
+                  <Text style={{ color: '#ffff', top: -10 }}>{nameAns1}</Text>}
+
+
+                {!visible ? (
+                  <View
+                    style={{
+                      width: responsiveWidth(50),
+                      height: responsiveHeight(70),
+                      backgroundColor: '#000',
+                      elevation: 3,
+                      borderRadius: 40,
+                      borderWidth: 1,
+                      borderColor: '#DDD',
+                    }}>
+                    <Provider>
+                      <View style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', marginRight: 30, marginTop: 20 }}>
+                        <Icon name="close" size={30} color="#fff" onPress={() => showModal(true)} />
                       </View>
+                      <View
+                        style={{
+                          justifyContent: 'center',
+                          alignSelf: 'center',
+                          // top: 30,
+                          flex: 1
 
-                    </View>
-                    {/* <Button style={{marginTop: 30}} onPress={showModal}>
+                        }}>
+                        <Image
+                          style={{ width: 120, height: 120 }}
+                          source={require('../assets/server.png')}
+                        />
+
+
+                        <View style={{ top: 10 }}>
+                          <Text
+                            style={{
+                              color: '#fff',
+                              fontSize: 19,
+                              fontWeight: '400',
+                            }}>
+                            Network error
+                          </Text>
+                        </View>
+
+                      </View>
+                      {/* <Button style={{marginTop: 30}} onPress={showModal}>
                     Go back
                   </Button> */}
-                  </Provider>
-                </View>
-              ) : (
-                <ImageBackground
-                  style={{
-                    height: responsiveWidth(30),
-                    width: responsiveWidth(30),
-                  }}
-                  imageStyle={{ borderRadius: 200, flex: 1 }}
-                  source={require('../assets/jasmin.gif')}></ImageBackground>
-              )}
-            </View>
-            <View style={{ alignItems: 'center', flex: 1, }}>
-              {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
+                    </Provider>
+                  </View>
+                ) : (
+                  <ImageBackground
+                    style={{
+                      height: responsiveWidth(30),
+                      width: responsiveWidth(30),
+                    }}
+                    imageStyle={{ borderRadius: 200, flex: 1 }}
+                    source={require('../assets/jasmin.gif')}></ImageBackground>
+                )}
+              </View>
+              <View style={{ alignItems: 'center', flex: 1, }}>
+                {/* <View style={{ width: 244, height: 244, backgroundColor: '#000', alignItems: 'center' }}>
 
               <Text style={{ color: '#fff', fontSize: 25, fontWeight: '200' }}>{result}</Text>
 
             </View> */}
 
-              <View style={{ alignItems: 'center' }}>
-                {assestant ? (
-                  result.length > 0 ? (
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontSize: responsiveFontSize(2.5),
-                        fontWeight: '300',
-                      }}>
-                      {result}
-                    </Text>
+                <View style={{ alignItems: 'center' }}>
+
+
+
+
+
+                  {assestant ? (
+                    result.length > 0 ? (
+                      <Text
+                        style={{
+                          color: '#fff',
+                          fontSize: responsiveFontSize(2.5),
+                          fontWeight: '300',
+                        }}>
+                        {result}
+                      </Text>
+                    ) : (
+                      <Text
+                        style={{
+                          color: '#fff',
+                          fontSize: responsiveFontSize(2.5),
+                          fontWeight: '300',
+                        }}>
+                        Listening....
+                      </Text>
+                    )
                   ) : (
-                    <Text
+
+                    <View>
+
+
+                      <AnimateTriggerText text={name} duration={1500} delay={500} />
+                        
+
+                        <View style={{alignItems:'center' , top:5}}>
+                      <Text
+                        style={{
+                          color: '#fff',
+                          fontSize: responsiveFontSize(2),
+                          fontWeight: '200',
+                        }}>
+                        {result}
+                      </Text>
+                       </View>
+
+                    </View>
+                  )}
+
+
+
+                </View>
+
+
+
+
+              </View>
+
+
+
+            </View>
+
+
+
+            <TouchableOpacity
+              onPress={() => startRecording()}
+              onLongPress={() => assistanceTrigger(false)}
+              style={styles.floatingButton}>
+              <View style={styles.buttonContainer}>
+                {result == false ? (
+                  <ImageBackground
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    imageStyle={{ borderRadius: 200, elevation: 4 }}
+                    source={
+                      require('../assets/gradientBlue.jpeg')
+                    }>
+                    <Image
                       style={{
-                        color: '#fff',
-                        fontSize: responsiveFontSize(2.5),
-                        fontWeight: '300',
-                      }}>
-                      Listening....
-                    </Text>
-                  )
+                        width: responsiveWidth(2),
+                        height: responsiveWidth(2),
+                      }}
+                      source={require('../assets/Mic.png')}
+                    />
+                  </ImageBackground>
                 ) : (
-                  <AnimateTriggerText text={name} duration={1500} delay={500} />
+                  // <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
+
+                  //   <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
+
+                  //   </ImageBackground>
+                  // </TouchableOpacity>
+                  <ImageBackground
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1,
+                      borderColor: '#19ecf7',
+                      borderRadius: 200,
+                    }}
+                    imageStyle={{ borderRadius: 200, elevation: 4 }}
+                    source={
+                      require('../assets/gradientBlue.jpeg')
+                    }>
+                    <Image
+                      style={{
+                        width: responsiveWidth(2),
+                        height: responsiveWidth(2),
+                      }}
+                      source={require('../assets/Mic.png')}
+                    />
+                  </ImageBackground>
                 )}
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            onPress={() => startRecording()}
-            onLongPress={() => assistanceTrigger(false)}
-            style={styles.floatingButton}>
-            <View style={styles.buttonContainer}>
-              {result == false ? (
-                <ImageBackground
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  imageStyle={{ borderRadius: 200, elevation: 4 }}
-                  source={
-                    require('../assets/gradientBlue.jpeg')
-                  }>
-                  <Image
-                    style={{
-                      width: responsiveWidth(2),
-                      height: responsiveWidth(2),
-                    }}
-                    source={require('../assets/Mic.png')}
-                  />
-                </ImageBackground>
-              ) : (
-                // <TouchableOpacity style={{alignItems:'center' , justifyContent:'center'}} onPress={() => stop()}>
-
-                //   <ImageBackground style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }} imageStyle={{ borderRadius: 200, elevation: 4, }} source={require('../assets/But.png')}>
-
-                //   </ImageBackground>
-                // </TouchableOpacity>
-                <ImageBackground
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 1,
-                    borderColor: '#19ecf7',
-                    borderRadius: 200,
-                  }}
-                  imageStyle={{ borderRadius: 200, elevation: 4 }}
-                  source={
-                    require('../assets/gradientBlue.jpeg')
-                  }>
-                  <Image
-                    style={{
-                      width: responsiveWidth(2),
-                      height: responsiveWidth(2),
-                    }}
-                    source={require('../assets/Mic.png')}
-                  />
-                </ImageBackground>
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <AnswerAI Data={IsSpeak} stop={DistroySpeech} />
-      )}
+        ) : (
+          <AnswerAI Data={IsSpeak} stop={DistroySpeech} />
+        )}
     </View>
   );
 }
